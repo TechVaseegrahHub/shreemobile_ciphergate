@@ -685,6 +685,46 @@ const JobDetail = () => {
     }, 0);
   };
   
+  // Calculate total parts revenue (selling price - cost price)
+  const calculatePartsRevenue = () => {
+    if (!job.parts_used || job.parts_used.length === 0) return 0;
+    
+    return job.parts_used.reduce((total, partUsed, index) => {
+      // Extract part data - handle both populated and unpopulated cases
+      const partData = partUsed.part;
+      
+      // Get cost and selling prices with fallbacks
+      let partCostPrice = 0;
+      let partSellingPrice = 0;
+      
+      // Handle case where partData is a populated object
+      if (partData && typeof partData === 'object') {
+        if (partData.cost_price !== undefined) partCostPrice = partData.cost_price;
+        if (partData.selling_price !== undefined) partSellingPrice = partData.selling_price;
+      }
+      
+      // If we have availableParts and partData has an _id, try to get more detailed info
+      if (availableParts && partData && partData._id) {
+        const foundPart = availableParts.find(p => p._id === partData._id);
+        if (foundPart) {
+          if (foundPart.cost_price !== undefined) partCostPrice = foundPart.cost_price;
+          if (foundPart.selling_price !== undefined) partSellingPrice = foundPart.selling_price;
+        }
+      }
+      
+      // Use edited cost if available for this specific job
+      const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : partCostPrice;
+      const unitSellingPrice = partSellingPrice;
+      const quantity = partUsed.quantity || 0;
+      
+      // Calculate revenue per unit (selling price - cost price)
+      const unitRevenue = unitSellingPrice - unitCost;
+      const totalRevenue = unitRevenue * quantity;
+      
+      return total + totalRevenue;
+    }, 0);
+  };
+  
   const downloadPDF = async () => {
     if (!job) return;
     
@@ -1506,9 +1546,77 @@ const JobDetail = () => {
                       </button>
                     </div>
                   )}
-                  <div className="flex justify-between py-2 border-t border-gray-300 bg-green-50 p-2 rounded text-sm">
-                    <span className="font-bold">Revenue:</span>
-                    <span className="font-bold text-green-600">Rs {Math.max(0, (job.final_customer_price || job.total_amount || 0) - calculatePartsCost() - (job.service_charges || 0)).toFixed(2)}</span>
+                  
+                  {/* Revenue Section */}
+                  <div className="pt-3 border-t border-gray-300 bg-gray-50 p-2 rounded text-sm">
+                    <div className="font-bold mb-2 text-center">Revenue Details</div>
+                    
+                    {/* Service Charges Revenue */}
+                    <div className="flex justify-between py-1">
+                      <span>Service Charges Revenue:</span>
+                      <span className="font-medium">Rs {(job.service_charges || 0).toFixed(2)}</span>
+                    </div>
+                    
+                    {/* Parts Revenue Breakdown */}
+                    {job.parts_used && job.parts_used.length > 0 && (
+                      <div className="mt-1">
+                        <div className="font-medium text-sm mb-1">Parts Revenue Breakdown:</div>
+                        {job.parts_used.map((partUsed, index) => {
+                          const partData = partUsed.part;
+                          let partName = 'N/A';
+                          let costPrice = 0;
+                          let sellingPrice = 0;
+                          let revenue = 0;
+                          
+                          // Handle case where partData is a populated object
+                          if (partData && typeof partData === 'object') {
+                            if (partData.name) partName = partData.name;
+                            if (partData.cost_price !== undefined) costPrice = partData.cost_price;
+                            if (partData.selling_price !== undefined) sellingPrice = partData.selling_price;
+                          }
+                          
+                          // If we have availableParts and partData has an _id, try to get more detailed info
+                          if (availableParts && partData && partData._id) {
+                            const foundPart = availableParts.find(p => p._id === partData._id);
+                            if (foundPart) {
+                              partName = foundPart.name || partName;
+                              costPrice = foundPart.cost_price !== undefined ? foundPart.cost_price : costPrice;
+                              sellingPrice = foundPart.selling_price !== undefined ? foundPart.selling_price : sellingPrice;
+                            }
+                          }
+                          
+                          // Use edited cost if available for this specific job
+                          const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : costPrice;
+                          const unitSellingPrice = sellingPrice;
+                          const quantity = partUsed.quantity || 0;
+                          
+                          // Calculate revenue per unit (selling price - cost price)
+                          const unitRevenue = unitSellingPrice - unitCost;
+                          revenue = unitRevenue * quantity;
+                          
+                          return (
+                            <div key={index} className="flex justify-between text-sm pl-2">
+                              <span className="truncate max-w-[120px]">{partName} (x{quantity}):</span>
+                              <span>Rs {revenue.toFixed(2)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    
+                    {/* Final Parts Revenue */}
+                    <div className="flex justify-between py-1 border-t border-gray-200 mt-1">
+                      <span>Final Parts Revenue:</span>
+                      <span className="font-medium">Rs {calculatePartsRevenue().toFixed(2)}</span>
+                    </div>
+                    
+                    {/* Total Revenue */}
+                    <div className="flex justify-between py-2 border-t border-gray-300 mt-1 bg-green-100 rounded">
+                      <span className="font-bold">Total Revenue:</span>
+                      <span className="font-bold text-green-600">
+                        Rs {((job.service_charges || 0) + calculatePartsRevenue()).toFixed(2)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
