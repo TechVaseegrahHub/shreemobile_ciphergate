@@ -24,6 +24,8 @@ const JobDetail = () => {
   const [cancelling, setCancelling] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(job?.discount_amount || '');
   const [isEditingDiscount, setIsEditingDiscount] = useState(false);
+  const [serviceCharges, setServiceCharges] = useState(job?.service_charges || '');
+  const [isEditingServiceCharges, setIsEditingServiceCharges] = useState(false);
   const [showNewProductModal, setShowNewProductModal] = useState(false);
   const [newProductForm, setNewProductForm] = useState({
     name: '',
@@ -114,10 +116,11 @@ const JobDetail = () => {
     }
   }, [id]);
   
-  // Update discountAmount when job changes
+  // Update discountAmount and serviceCharges when job changes
   useEffect(() => {
     if (job) {
       setDiscountAmount(job.discount_amount || '');
+      setServiceCharges(job.service_charges || '');
     }
   }, [job]);
 
@@ -451,6 +454,39 @@ const JobDetail = () => {
     } catch (err) {
       console.error('Error updating discount:', err);
       setError('Failed to update discount: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setUpdating(false);
+    }
+  };
+  
+  // Update service charges
+  const updateServiceCharges = async () => {
+    try {
+      setUpdating(true);
+      
+      const serviceChargesValue = (serviceCharges === '' || serviceCharges === null) ? 0 : parseFloat(serviceCharges) || 0;
+      
+      // Calculate the difference to add to the existing total
+      const serviceChargesDiff = serviceChargesValue - (job.service_charges || 0);
+      const newTotalAmount = (job.total_amount || 0) + serviceChargesDiff;
+      
+      const response = await api.put(`/jobs/${id}/update`, {
+        service_charges: serviceChargesValue,
+        total_amount: newTotalAmount
+      });
+      
+      if (response.data.success) {
+        setJob(response.data.job);
+        setServiceCharges(response.data.job.service_charges || '');
+        setSuccess('Service charges updated successfully!');
+        setIsEditingServiceCharges(false);
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => setSuccess(''), 5000);
+      }
+    } catch (err) {
+      console.error('Error updating service charges:', err);
+      setError('Failed to update service charges: ' + (err.response?.data?.error || err.message));
     } finally {
       setUpdating(false);
     }
@@ -1212,9 +1248,49 @@ const JobDetail = () => {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Financials</h3>
               <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-500">Service Charges</p>
-                  <p className="font-medium">Rs {job.service_charges?.toFixed(2) || '0.00'}</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Service Charges</p>
+                    {isEditingServiceCharges ? (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium">Rs</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={serviceCharges || ''}
+                          onChange={(e) => setServiceCharges(e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
+                          onWheel={(e) => e.target.blur()}
+                          className="w-24 px-2 py-1 border border-gray-300 rounded text-right hide-spinner"
+                        />
+                      </div>
+                    ) : (
+                      <p className="font-medium">Rs {job.service_charges ? (job.service_charges).toFixed(2) : '0.00'}</p>
+                    )}
+                  </div>
+                  <div className="flex space-x-2">
+                    {isEditingServiceCharges && (
+                      <button
+                        onClick={() => setIsEditingServiceCharges(false)}
+                        className="text-sm px-2 py-1 bg-gray-500 text-white rounded"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        if (isEditingServiceCharges) {
+                          updateServiceCharges();
+                        } else {
+                          setIsEditingServiceCharges(true);
+                        }
+                      }}
+                      disabled={updating}
+                      className={`text-sm px-2 py-1 rounded ${isEditingServiceCharges ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {isEditingServiceCharges ? 'Save' : 'Edit'}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Parts Cost</p>

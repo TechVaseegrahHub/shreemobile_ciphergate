@@ -178,6 +178,29 @@ exports.updateJob = async (req, res) => {
       updates.repair_done_time = new Date();
     }
 
+    // Calculate total amount based on what's being updated
+    if (updates.service_charges !== undefined || updates.parts_used !== undefined) {
+      const existingJob = await Job.findById(id);
+      
+      // Calculate parts cost from existing or updated parts_used array
+      let partsCost = 0;
+      let partsUsedArray = updates.parts_used || existingJob.parts_used;
+      
+      if (partsUsedArray && partsUsedArray.length > 0) {
+        for (const partUsed of partsUsedArray) {
+          // Get the actual part details to calculate cost
+          const partDetails = await Part.findById(partUsed.part);
+          const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : (partDetails ? partDetails.cost_price : 0);
+          const quantity = partUsed.quantity || 0;
+          partsCost += (unitCost * quantity);
+        }
+      }
+      
+      // Calculate new total amount: parts_cost + service_charges
+      const serviceCharges = updates.service_charges !== undefined ? updates.service_charges : (existingJob.service_charges || 0);
+      updates.total_amount = partsCost + serviceCharges;
+    }
+
     // Update the job
     const job = await Job.findByIdAndUpdate(id, updates, { new: true })
       .populate('customer')
