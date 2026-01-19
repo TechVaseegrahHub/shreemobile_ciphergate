@@ -153,8 +153,13 @@ exports.getJobsByWorker = async (req, res) => {
       return res.status(400).json({ error: 'Invalid worker ID' });
     }
     
-    // Find jobs where the worker is assigned as the technician
-    const jobs = await Job.find({ assigned_technician: workerId })
+    // Find jobs where the worker is either assigned as the technician OR took the job
+    const jobs = await Job.find({
+      $or: [
+        { assigned_technician: workerId },
+        { taken_by_worker: workerId }
+      ]
+    })
       .populate('customer')
       .populate('taken_by_worker', 'name')
       .populate('assigned_technician', 'name')

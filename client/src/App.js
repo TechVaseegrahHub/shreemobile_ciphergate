@@ -11,6 +11,7 @@ import Financials from './pages/Financials';
 import Dashboard from './pages/Dashboard';
 import EmployeeLogin from './pages/EmployeeLogin';
 import EmployeeDashboard from './pages/EmployeeDashboard';
+import EmployeeJobs from './pages/EmployeeJobs';
 import Home from './pages/Home';
 import AdminLogin from './pages/AdminLogin';
 import Attendance from './pages/Attendance';
@@ -37,6 +38,9 @@ const ConditionalSidebar = ({ location, isSidebarOpen, toggleSidebar }) => {
   // Also check if we're on an employee attendance route
   const isEmployeeAttendance = location.pathname.startsWith('/employee/') && location.pathname.endsWith('/attendance');
   
+  // Also check if we're on an employee jobs route
+  const isEmployeeJobs = location.pathname.startsWith('/employee/') && location.pathname.endsWith('/jobs');
+  
   // Show sidebar only if not on login/home pages and user is authenticated
   // For employees, show sidebar on attendance page but not on dashboard
   const showSidebar = !shouldHideSidebar && !(isEmployeeDashboard && !isEmployeeAttendance) && (localStorage.getItem('admin') || (localStorage.getItem('employee') && (isEmployeeAttendance || location.pathname.startsWith('/employee/') && location.pathname.endsWith('/dashboard'))));
@@ -44,10 +48,10 @@ const ConditionalSidebar = ({ location, isSidebarOpen, toggleSidebar }) => {
   // Simplified logic: show sidebar for authenticated users except on specific hidden routes
   const isAdmin = localStorage.getItem('admin');
   const isEmployee = localStorage.getItem('employee');
-  const showSidebarSimple = !shouldHideSidebar && (isAdmin || (isEmployee && (isEmployeeAttendance || isEmployeeDashboard)));
+  const showSidebarSimple = !shouldHideSidebar && (isAdmin || (isEmployee && (isEmployeeAttendance || isEmployeeDashboard || isEmployeeJobs)));
   
   // Handle employee sidebar
-  if (isEmployee && (isEmployeeAttendance || isEmployeeDashboard)) {
+  if (isEmployee && (isEmployeeAttendance || isEmployeeDashboard || isEmployeeJobs)) {
     // Parse employee data from localStorage
     try {
       const employee = JSON.parse(localStorage.getItem('employee'));
@@ -111,6 +115,7 @@ function AppContent() {
           <Route path="/cancelled-jobs" element={<CancelledJobs />} />
           <Route path="/employee/login" element={<EmployeeLogin />} />
           <Route path="/employee/:id/dashboard" element={<EmployeeDashboard />} />
+          <Route path="/employee/:id/jobs" element={<EmployeeJobs />} />
           <Route path="/employee/:id/attendance" element={<WorkerAttendance />} />
         </Routes>
       </div>

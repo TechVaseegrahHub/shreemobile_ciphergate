@@ -453,57 +453,57 @@ const EmployeeDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="max-w-6xl mx-auto p-4">
+      <div className="max-w-full mx-auto p-2 sm:p-4">
         {/* Header */}
         <div className="bg-white shadow">
-          <div className="px-4 py-4">
-            <h1 className="text-xl font-bold text-gray-900">Employee Dashboard</h1>
+          <div className="px-2 py-3 sm:px-4 sm:py-4">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Employee Dashboard</h1>
           </div>
         </div>
 
-        <div className="p-4">
+        <div>
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
+            <div className="bg-white rounded-lg shadow p-2 sm:p-4">
               <div className="flex items-center">
-                <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-500">Assigned Jobs</p>
-                  <p className="text-2xl font-bold">{jobs.length}</p>
+                <div className="ml-2 sm:ml-3">
+                  <p className="text-xs text-gray-500">Assigned Jobs</p>
+                  <p className="text-lg sm:text-xl font-bold">{jobs.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-2 sm:p-4">
               <div className="flex items-center">
-                <div className="p-3 rounded-full bg-green-100 text-green-600">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="p-2 rounded-full bg-green-100 text-green-600">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-500">Completed Jobs</p>
-                  <p className="text-2xl font-bold">
+                <div className="ml-2 sm:ml-3">
+                  <p className="text-xs text-gray-500">Completed Jobs</p>
+                  <p className="text-lg sm:text-xl font-bold">
                     {jobs.filter(job => job.status === 'Done').length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-2 sm:p-4">
               <div className="flex items-center">
-                <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="p-2 rounded-full bg-yellow-100 text-yellow-600">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-500">In Progress</p>
-                  <p className="text-2xl font-bold">
+                <div className="ml-2 sm:ml-3">
+                  <p className="text-xs text-gray-500">In Progress</p>
+                  <p className="text-lg sm:text-xl font-bold">
                     {jobs.filter(job => job.status === 'In Progress').length}
                   </p>
                 </div>
@@ -512,9 +512,9 @@ const EmployeeDashboard = () => {
           </div>
 
           {/* Worker Info */}
-          <div className="bg-white rounded-lg shadow mb-6 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Profile Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-lg shadow mb-4 sm:mb-6 p-2 sm:p-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-4">Profile Information</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
               <div>
                 <p className="text-sm text-gray-500">Name</p>
                 <p className="font-semibold">{worker?.name}</p>
@@ -541,8 +541,16 @@ const EmployeeDashboard = () => {
           </div>
 
           {/* Assigned Jobs */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Assigned Jobs</h2>
+          <div className="bg-white rounded-lg shadow p-2 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-4 gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Assigned Jobs</h2>
+              <button 
+                onClick={() => navigate(`/employee/${id}/jobs`)}
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition text-xs sm:text-sm"
+              >
+                View All Jobs
+              </button>
+            </div>
             {jobs.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -552,34 +560,34 @@ const EmployeeDashboard = () => {
                 <p className="mt-1 text-sm text-gray-500">You don't have any jobs assigned to you yet.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto -mx-2 sm:-mx-4 px-2 sm:px-4">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job ID</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th scope="col" className="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-2 sm:py-2 md:px-3 md:py-3">ID</th>
+                      <th scope="col" className="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-2 sm:py-2 md:px-3 md:py-3">Customer</th>
+                      <th scope="col" className="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-2 sm:py-2 md:px-3 md:py-3">Device</th>
+                      <th scope="col" className="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-2 sm:py-2 md:px-3 md:py-3">Issue</th>
+                      <th scope="col" className="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-2 sm:py-2 md:px-3 md:py-3">Status</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {jobs.map((job) => (
+                    {jobs.slice(0, 5).map((job) => (  // Show only first 5 jobs on dashboard
                       <tr key={job._id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-1 py-1 text-xs font-medium text-gray-900 sm:px-2 sm:py-2 md:px-3 md:py-4">
                           {job._id?.substring(0, 8)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-1 py-1 text-xs text-gray-500 sm:px-2 sm:py-2 md:px-3 md:py-4 max-w-[60px] sm:max-w-[80px] md:max-w-none truncate">
                           {job.customer?.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-1 py-1 text-xs text-gray-500 sm:px-2 sm:py-2 md:px-3 md:py-4 max-w-[60px] sm:max-w-[80px] md:max-w-none truncate">
                           {job.device_model}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-1 py-1 text-xs text-gray-500 sm:px-2 sm:py-2 md:px-3 md:py-4 max-w-[60px] sm:max-w-[80px] md:max-w-none truncate">
                           {job.reported_issue}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        <td className="px-1 py-1 whitespace-nowrap sm:px-2 sm:py-2 md:px-3 md:py-4">
+                          <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             job.status === 'Done' ? 'bg-green-100 text-green-800' :
                             job.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
                             job.status === 'Pending Approval' ? 'bg-blue-100 text-blue-800' :
@@ -590,6 +598,19 @@ const EmployeeDashboard = () => {
                         </td>
                       </tr>
                     ))}
+                    {jobs.length > 5 && (
+                      <tr>
+                        <td colSpan="5" className="px-1 py-1 text-center text-xs text-gray-500 sm:px-2 sm:py-2 md:px-6 md:py-4">
+                          Showing {jobs.slice(0, 5).length} of {jobs.length} jobs. 
+                          <button 
+                            onClick={() => navigate(`/employee/${id}/jobs`)}
+                            className="text-blue-600 hover:text-blue-800 font-medium ml-1 text-xs"
+                          >
+                            View All
+                          </button>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -600,9 +621,9 @@ const EmployeeDashboard = () => {
 
       {/* Face Recognition Modal */}
       {showFaceModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <div className="border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">
                 Face Recognition Attendance
               </h3>
@@ -615,8 +636,8 @@ const EmployeeDashboard = () => {
                 </svg>
               </button>
             </div>
-            <div className="px-6 py-4">
-              <div className="mb-6">
+            <div className="px-4 py-3 sm:px-6 sm:py-4">
+              <div className="mb-4 sm:mb-6">
                 {!isModelLoaded ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
@@ -624,7 +645,7 @@ const EmployeeDashboard = () => {
                   </div>
                 ) : (
                   <div className="face-attendance-container">
-                    <div className="webcam-container relative mb-4">
+                    <div className="webcam-container relative mb-2 sm:mb-4">
                       <video
                         ref={videoRef}
                         autoPlay
@@ -635,7 +656,7 @@ const EmployeeDashboard = () => {
                       <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
                     </div>
 
-                    <div className="text-center mb-4">
+                    <div className="text-center mb-2 sm:mb-4">
                       <div className="inline-block p-2 bg-blue-100 rounded-full">
                         <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
                       </div>
@@ -645,20 +666,20 @@ const EmployeeDashboard = () => {
                     </div>
 
                     {faceError && (
-                      <div className="mb-4 p-3 text-center text-red-600 bg-red-50 rounded-md border border-red-200">
+                      <div className="mb-2 sm:mb-4 p-2 sm:p-3 text-center text-red-600 bg-red-50 rounded-md border border-red-200 text-sm">
                         {faceError}
                       </div>
                     )}
 
                     {faceSuccess && (
-                      <div className="mb-4 p-3 text-center text-green-600 bg-green-50 rounded-md border border-green-200">
+                      <div className="mb-2 sm:mb-4 p-2 sm:p-3 text-center text-green-600 bg-green-50 rounded-md border border-green-200 text-sm">
                         {faceSuccess}
                       </div>
                     )}
 
                     <div className="text-center text-gray-600">
-                      <p className="font-medium">Face Recognition Status</p>
-                      <p className="text-sm mt-1">
+                      <p className="font-medium text-sm">Face Recognition Status</p>
+                      <p className="text-xs sm:text-sm mt-1">
                         {faceProcessing ? 'Analyzing facial features...' : 'Waiting for face detection'}
                       </p>
                     </div>

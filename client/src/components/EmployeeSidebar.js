@@ -94,6 +94,22 @@ const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar }) => {
             Dashboard
           </Link>
           
+          {/* My Jobs Button */}
+          <Link
+            to={`/employee/${worker?._id}/jobs`}
+            className="flex items-center px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-blue-300 transition"
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                toggleSidebar();
+              }
+            }}
+          >
+            <svg className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            My Jobs
+          </Link>
+          
           {/* Attendance Button */}
           <Link
             to={`/employee/${worker?._id}/attendance`}
