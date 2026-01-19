@@ -420,18 +420,32 @@ Thank you!`;
     try {
       const formattedPhone = this.formatPhoneNumber(phoneNumber);
       
+      console.log('🔄 Preparing to send text message...');
+      console.log('- Original phone:', phoneNumber);
+      console.log('- Formatted phone:', formattedPhone);
+      console.log('- Message length:', text.length, 'characters');
+      console.log('- First 100 chars:', text.substring(0, 100) + '...');
+      
+      if (!formattedPhone) {
+        throw new Error('Invalid phone number format');
+      }
+      
+      const payload = {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: formattedPhone,
+        type: 'text',
+        text: {
+          preview_url: false,
+          body: text.substring(0, 4096)
+        }
+      };
+      
+      console.log('📤 Sending payload to WhatsApp API...');
+      
       const response = await axios.post(
         this.baseUrl,
-        {
-          messaging_product: 'whatsapp',
-          recipient_type: 'individual',
-          to: formattedPhone,
-          type: 'text',
-          text: {
-            preview_url: false,
-            body: text.substring(0, 4096)
-          }
-        },
+        payload,
         {
           headers: {
             'Authorization': `Bearer ${this.accessToken}`,
@@ -441,12 +455,27 @@ Thank you!`;
         }
       );
       
+      console.log('✅ WhatsApp API Response:');
+      console.log('- Status:', response.status);
+      console.log('- Message ID:', response.data?.messages?.[0]?.id || 'Not provided');
+      console.log('- Response data:', JSON.stringify(response.data, null, 2));
+      
       console.log('✓ Text message sent to:', formattedPhone);
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.error?.message || error.message;
-      console.error('✗ Error in sendTextMessageInternal:', errorMessage);
-      throw new Error(`Text send failed: ${errorMessage}`);
+      const errorCode = error.response?.data?.error?.code;
+      
+      console.error('✗ Error in sendTextMessageInternal:');
+      console.error('- Error message:', errorMessage);
+      console.error('- Error code:', errorCode);
+      console.error('- Status code:', error.response?.status);
+      
+      if (error.response?.data) {
+        console.error('- Full error response:', JSON.stringify(error.response.data, null, 2));
+      }
+      
+      throw new Error(`Text send failed: ${errorMessage} (Code: ${errorCode})`);
     }
   }
 
@@ -1827,16 +1856,17 @@ Thank you! 🙏`;
       
       console.log(`Processing job completion notification for: ${jobId}`);
       
-      // At the beginning of sendDeviceVideo function, after getting jobId:
-const job = await Job.findById(jobId);
-
-if (!job) {
-  return res.status(404).json({
-    success: false,
-    message: 'Job not found'
-  });
-}
-
+      // Get job details
+      const job = await Job.findById(jobId)
+        .populate('customer');
+      
+      if (!job) {
+        return res.status(404).json({
+          success: false,
+          message: 'Job not found'
+        });
+      }
+      
       if (!job.customer?.phone) {
         return res.status(400).json({
           success: false,
@@ -1855,57 +1885,36 @@ const deviceModel = `${job.device_brand || ''} ${job.device_model}`.trim();
 
       console.log(`Job completion - Phone: ${phoneNumber}, Job: ${jobCardNumber}`);
 
+      // Check WhatsApp credentials
       if (!this.accessToken || !this.phoneNumberId) {
-        return res.json({
+        console.log('❌ WhatsApp credentials not configured');
+        console.log('- Access Token:', this.accessToken ? 'Present' : 'Missing');
+        console.log('- Phone Number ID:', this.phoneNumberId ? 'Present' : 'Missing');
+        
+        return res.status(400).json({
           success: false,
           message: 'WhatsApp API not configured',
           error: 'Missing credentials',
           note: 'Job marked as completed. WhatsApp notification skipped.'
         });
       }
+      
+      console.log('✅ WhatsApp credentials verified');
 
       let templateSent = false;
       
-      // Try template first
-      try {
-        await axios.post(
-          this.baseUrl,
-          {
-            messaging_product: 'whatsapp',
-            recipient_type: 'individual',
-            to: formattedPhone,
-            type: 'template',
-            template: {
-              name: 'repair_job_completed',
-              language: { code: 'en' },
-              components: [
-                {
-                  type: "body",
-                  parameters: [
-                    { type: "text", text: customerName.substring(0, 30) },
-                    { type: "text", text: jobCardNumber.substring(0, 20) },
-                    { type: "text", text: deviceModel.substring(0, 30) }
-                  ]
-                }
-              ]
-            }
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${this.accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            timeout: 10000
-          }
-        );
-        templateSent = true;
-        console.log('✅ Completion template sent');
-      } catch (templateError) {
-        console.log('❌ Completion template failed, using text message');
-      }
+      // Skip template for completion (use text message for reliability)
+      console.log('⏭️ Skipping template for completion notification - using text message for reliability');
+      console.log('- Reason: Template parameter mismatch (expected 6, got 3)');
+      console.log('- Fallback: Text message is more reliable for completion notifications');
+      
+      // For completion notifications, always use text message (more reliable)
+      console.log('✅ Using text message for completion notification (more reliable than templates)');
+      templateSent = false; // We're not using template for completion
 
-      // Send collection instructions
-      const collectionMessage = `🎉 *Your Device is Ready!*
+      // Always send text message as backup/fallback
+      try {
+        const collectionMessage = `🎉 *Your Device is Ready!*
 
 Hello ${customerName},
 
@@ -1928,8 +1937,18 @@ Your repair is complete.
 📞 94430 19097
 
 Please bring your job ID. Thank you! 🙏`;
-      
-      await this.sendTextMessageInternal(phoneNumber, collectionMessage);
+        
+        console.log('📤 Sending text message fallback...');
+        console.log('📝 Message content:');
+        console.log(collectionMessage);
+        console.log('📱 Sending to formatted number:', formattedPhone);
+        
+        await this.sendTextMessageInternal(phoneNumber, collectionMessage);
+        console.log('✅ Text message sent successfully');
+      } catch (textError) {
+        console.log('❌ Text message also failed:', textError.message);
+        // Even if text fails, we still want to mark the attempt
+      }
 
       // Update job
       job.whatsapp_completion_sent = new Date();
@@ -1950,11 +1969,20 @@ Please bring your job ID. Thank you! 🙏`;
       });
 
     } catch (error) {
-      console.error('❌ Error sending job completion notification:', error.message);
+      console.error('❌ Error sending job completion notification:');
+      console.error('- Message:', error.message);
+      console.error('- Stack:', error.stack);
+      
+      if (error.response) {
+        console.error('- Response status:', error.response.status);
+        console.error('- Response data:', error.response.data);
+      }
+      
       res.status(500).json({
         success: false,
         message: 'Failed to send job completion notification',
         error: error.message,
+        errorDetails: error.response?.data || null,
         processingTime: `${Date.now() - startTime}ms`
       });
     }
