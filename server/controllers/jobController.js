@@ -206,6 +206,95 @@ exports.updateJob = async (req, res) => {
       updates.total_amount = partsCost + serviceCharges;
     }
 
+    // Get the job BEFORE any processing to calculate inventory changes
+    const originalJob = await Job.findById(id);
+    
+    // Handle Inventory Deduction if parts were added
+    if (updates.parts_used) {
+      try {
+        console.log('Processing inventory deduction for job:', id);
+        console.log('Updates parts_used:', updates.parts_used);
+        
+        // Create maps for comparison
+        const oldPartsMap = {};
+        if (originalJob.parts_used) {
+          originalJob.parts_used.forEach(partUsed => {
+            const partId = typeof partUsed.part === 'object' ? partUsed.part._id : partUsed.part;
+            oldPartsMap[partId.toString()] = partUsed.quantity;
+          });
+        }
+        
+        const newPartsMap = {};
+        updates.parts_used.forEach(partUsed => {
+          const partId = typeof partUsed.part === 'object' ? partUsed.part._id : partUsed.part;
+          newPartsMap[partId.toString()] = partUsed.quantity;
+        });
+        
+        console.log('Old parts map (before update):', oldPartsMap);
+        console.log('New parts map (after update):', newPartsMap);
+        
+        // Calculate what needs to be returned to inventory (parts removed from job)
+        for (const partId in oldPartsMap) {
+          if (!newPartsMap[partId]) {
+            // Part was removed from job, return to inventory
+            const part = await Part.findById(partId);
+            if (part) {
+              part.stock = part.stock + oldPartsMap[partId];
+              await part.save();
+              console.log(`Returned ${oldPartsMap[partId]} units of part ${partId} to inventory. New stock: ${part.stock}`);
+            }
+          }
+        }
+        
+        // Calculate the difference for each part that exists in both maps
+        for (const partId in newPartsMap) {
+          const oldQuantity = oldPartsMap[partId] || 0;
+          const newQuantity = newPartsMap[partId];
+          const difference = newQuantity - oldQuantity;
+          
+          console.log(`Part ${partId}: old=${oldQuantity}, new=${newQuantity}, diff=${difference}`);
+          
+          const part = await Part.findById(partId);
+          if (part) {
+            if (difference > 0) {
+              // More parts added to job, deduct from inventory
+              part.stock = Math.max(0, part.stock - difference);
+              console.log(`Deducting ${difference} units of part ${partId} from inventory. New stock: ${part.stock}`);
+            } else if (difference < 0) {
+              // Fewer parts in job, return to inventory
+              part.stock = part.stock + Math.abs(difference);
+              console.log(`Returning ${Math.abs(difference)} units of part ${partId} to inventory. New stock: ${part.stock}`);
+            }
+            await part.save();
+          }
+        }
+      } catch (inventoryError) {
+        console.error('Error updating inventory:', inventoryError);
+        // Continue processing even if inventory update fails
+      }
+    }
+
+    // Calculate total amount based on what's being updated
+    if (updates.service_charges !== undefined || updates.parts_used !== undefined) {
+      // Calculate parts cost from existing or updated parts-used array
+      let partsCost = 0;
+      let partsUsedArray = updates.parts_used || originalJob.parts_used;
+      
+      if (partsUsedArray && partsUsedArray.length > 0) {
+        for (const partUsed of partsUsedArray) {
+          // Get the actual part details to calculate cost
+          const partDetails = await Part.findById(partUsed.part);
+          const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : (partDetails ? partDetails.cost_price : 0);
+          const quantity = partUsed.quantity || 0;
+          partsCost += (unitCost * quantity);
+        }
+      }
+      
+      // Calculate new total amount: parts_cost + service_charges
+      const serviceCharges = updates.service_charges !== undefined ? updates.service_charges : (originalJob.service_charges || 0);
+      updates.total_amount = partsCost + serviceCharges;
+    }
+
     // Update the job
     const job = await Job.findByIdAndUpdate(id, updates, { new: true })
       .populate('customer')
@@ -220,11 +309,6 @@ exports.updateJob = async (req, res) => {
           { path: 'supplier', select: 'name' }
         ]
       });
-
-    // Handle Inventory Deduction if parts were added (simplified logic)
-    if (updates.parts_used) {
-       // Logic to iterate parts_used and decrement Stock in Part collection would go here
-    }
 
     // Trigger 'Done' Notification
     if (updates.status === 'Done') {
