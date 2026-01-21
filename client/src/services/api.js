@@ -18,6 +18,16 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${adminData.token}`;
       }
     }
+    
+    // Also check for worker authentication
+    const worker = localStorage.getItem('employee');
+    if (worker) {
+      const workerData = JSON.parse(worker);
+      if (workerData.token) {
+        config.headers.Authorization = `Bearer ${workerData.token}`;
+      }
+    }
+    
     console.log('Making request to:', config.url, 'with headers:', config.headers);
     return config;
   },

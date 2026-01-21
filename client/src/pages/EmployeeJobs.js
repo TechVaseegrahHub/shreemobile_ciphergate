@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../services/api';
 import EmployeeSidebar from '../components/EmployeeSidebar';
 
 const EmployeeJobs = () => {
@@ -14,6 +15,9 @@ const EmployeeJobs = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [showJobDetail, setShowJobDetail] = useState(false);
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
+  const [workerRemarks, setWorkerRemarks] = useState('');
+  const [updatingRemarks, setUpdatingRemarks] = useState(false);
   
   // Filter states
   const [dateFrom, setDateFrom] = useState('');
@@ -27,7 +31,7 @@ const EmployeeJobs = () => {
 
   const fetchWorkerData = useCallback(async () => {
     try {
-      const res = await axios.get(`/api/workers/${id}`);
+      const res = await api.get(`/workers/${id}`);
       setWorker(res.data);
     } catch (err) {
       console.error(err);
@@ -37,7 +41,7 @@ const EmployeeJobs = () => {
 
   const fetchJobs = useCallback(async () => {
     try {
-      const res = await axios.get(`/api/jobs/worker/${id}`);
+      const res = await api.get(`/jobs/worker/${id}`);
       setJobs(res.data);
       setFilteredJobs(res.data);
     } catch (err) {
@@ -118,6 +122,7 @@ const EmployeeJobs = () => {
 
   const viewJobDetail = (job) => {
     setSelectedJob(job);
+    setWorkerRemarks(job.worker_remarks || '');
     setShowJobDetail(true);
   };
 
@@ -144,6 +149,43 @@ const EmployeeJobs = () => {
       month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  const updateWorkerRemarks = async () => {
+    if (!selectedJob) return;
+    
+    try {
+      setUpdatingRemarks(true);
+      
+      const response = await api.put(`/jobs/${selectedJob._id}/update`, {
+        worker_remarks: workerRemarks
+      });
+      
+      if (response.data.success) {
+        // Update the job in the local state
+        const updatedJob = response.data.job;
+        setSelectedJob(updatedJob);
+        
+        // Also update in the jobs list
+        setJobs(prevJobs => prevJobs.map(job => 
+          job._id === updatedJob._id ? updatedJob : job
+        ));
+        
+        setFilteredJobs(prevFilteredJobs => prevFilteredJobs.map(job => 
+          job._id === updatedJob._id ? updatedJob : job
+        ));
+        
+        setShowRemarkModal(false);
+        alert('Remarks saved successfully!');
+      } else {
+        alert('Failed to save remarks');
+      }
+    } catch (err) {
+      console.error('Error updating worker remarks:', err);
+      alert('Error saving remarks: ' + err.message);
+    } finally {
+      setUpdatingRemarks(false);
+    }
   };
 
   if (loading) {
@@ -342,9 +384,19 @@ const EmployeeJobs = () => {
                           <td className="px-1 py-1 whitespace-nowrap text-xs font-medium sm:px-2 sm:py-2 md:px-3 md:py-4">
                             <button
                               onClick={() => viewJobDetail(job)}
-                              className="text-blue-600 hover:text-blue-900 mr-1 text-xs"
+                              className="text-blue-600 hover:text-blue-900 mr-2 text-xs"
                             >
                               Details
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedJob(job);
+                                setWorkerRemarks(job.worker_remarks || '');
+                                setShowRemarkModal(true);
+                              }}
+                              className="text-green-600 hover:text-green-900 text-xs"
+                            >
+                              Remark
                             </button>
                           </td>
                         </tr>
@@ -540,6 +592,45 @@ const EmployeeJobs = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Remark Modal */}
+      {showRemarkModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
+              <h3 className="text-lg font-semibold text-gray-900">Add/Edit Remarks</h3>
+            </div>
+            <div className="p-4 sm:p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Work Description
+                </label>
+                <textarea
+                  value={workerRemarks}
+                  onChange={(e) => setWorkerRemarks(e.target.value)}
+                  rows="4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Describe what you did for this work..."
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowRemarkModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={updateWorkerRemarks}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Save Remarks
+                </button>
               </div>
             </div>
           </div>

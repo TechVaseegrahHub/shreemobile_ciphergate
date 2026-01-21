@@ -118,7 +118,8 @@ const JobSchema = new Schema({
   }],
   department: { type: Schema.Types.ObjectId, ref: 'Department' },
   customer_photo: { type: String }, // Store customer photo as base64 string or URL
-  device_video: { type: String } // Store device video as base64 string or URL
+  device_video: { type: String }, // Store device video as base64 string or URL
+  worker_remarks: String // Store worker remarks for the job
 });
 
 // Batch Schema

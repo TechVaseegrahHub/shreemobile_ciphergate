@@ -57,7 +57,7 @@ const Inventory = () => {
     try {
       const res = await api.get('/categories');
       setCategories(res.data);
-      
+
       // Set default category if none selected
       if (res.data.length > 0 && !formData.category) {
         setFormData(prev => ({
@@ -80,7 +80,7 @@ const Inventory = () => {
       // Not a critical error, so we won't set error state
     }
   };
-  
+
   // Filter parts based on search term
   const filteredParts = parts.filter(part => {
     const searchLower = searchTerm.toLowerCase();
@@ -118,16 +118,16 @@ const Inventory = () => {
         const res = await api.post('/categories', {
           name: customCategory.trim()
         });
-        
+
         // Add new category to the list
         setCategories(prev => [...prev, res.data]);
-        
+
         // Set the new category as selected
         setFormData({
           ...formData,
           category: res.data._id
         });
-        
+
         setShowCategoryModal(false);
         setCustomCategory('');
         setSuccess('Category created successfully');
@@ -140,49 +140,49 @@ const Inventory = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.name || !formData.name.trim()) {
       setError('Part name is required');
       return;
     }
-    
+
     if (!formData.sku || !formData.sku.trim()) {
       setError('SKU is required');
       return;
     }
-    
+
     if (!formData.category) {
       setError('Category is required');
       return;
     }
-    
+
     // Make sure category is a valid ObjectId string
     if (typeof formData.category !== 'string' || formData.category.length === 0) {
       setError('Please select a valid category');
       return;
     }
-    
+
     // Ensure categories are loaded
     if (categories.length === 0) {
       setError('Categories are not loaded yet. Please wait and try again.');
       return;
     }
-    
+
     // Verify that the selected category exists in our categories list
     const categoryExists = categories.some(cat => cat._id === formData.category);
     if (!categoryExists && formData.category !== 'other') {
       setError('Please select a valid category from the list');
       return;
     }
-    
+
     // Additional check: ensure category is a valid ObjectId format
     const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(formData.category);
     if (!isValidObjectId) {
       setError('Category ID format is invalid. Please select a valid category.');
       return;
     }
-    
+
     try {
       // Prepare data for submission
       let submitData = {
@@ -197,16 +197,20 @@ const Inventory = () => {
         supplier: formData.supplier || '',
         color: formData.color || ''
       };
-      
+
       // If supplier is provided, validate it's a valid ObjectId
-      if (submitData.supplier) {
-        const isValidSupplierId = /^[0-9a-fA-F]{24}$/.test(submitData.supplier);
+      if (formData.supplier && formData.supplier.trim()) {
+        const isValidSupplierId = /^[0-9a-fA-F]{24}$/.test(formData.supplier);
         if (!isValidSupplierId) {
           setError('Supplier ID format is invalid. Please select a valid supplier.');
           return;
         }
+        submitData.supplier = formData.supplier;
+      } else {
+        // Remove supplier from submitData if it's an empty string
+        delete submitData.supplier;
       }
-      
+
       if (isEditing) {
         // Update existing part
         await api.put(`/inventory/${editingPartId}`, submitData);
@@ -237,14 +241,14 @@ const Inventory = () => {
       // More detailed error handling
       if (err.response?.data?.error) {
         const errorMessage = err.response.data.error;
-        
+
         // Handle specific error messages
         if (errorMessage.includes('SKU already exists')) {
           setError('This SKU already exists. Please enter a unique SKU for the product.');
         } else {
           setError('Server Error: ' + errorMessage);
         }
-        
+
         console.log('Server validation error details:', errorMessage);
       } else if (err.response?.status === 400) {
         setError('Invalid data provided. Please check all fields. Error: ' + (err.response?.data?.message || 'Bad Request'));
@@ -303,7 +307,7 @@ const Inventory = () => {
     setEditingPartId(part._id);
     setShowModal(true);
   };
-  
+
   const handleDelete = async (partId) => {
     if (window.confirm('Are you sure you want to delete this part? This action cannot be undone.')) {
       try {
@@ -311,13 +315,13 @@ const Inventory = () => {
         await api.delete(`/inventory/${partId}`);
         setSuccess('Part deleted successfully!');
         fetchParts(); // Refresh the parts list
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(''), 3000);
       } catch (err) {
         console.error(err);
         setError('Failed to delete part. Please try again.');
-        
+
         // Clear error message after 5 seconds
         setTimeout(() => setError(''), 5000);
       } finally {
@@ -350,18 +354,13 @@ const Inventory = () => {
         </div>
         <button
           onClick={() => {
-            if (categories.length > 0) {
-              setFormData({
-                ...formData,
-                category: categories[0]._id // Set default category when opening modal
-              });
-              setShowModal(true);
-            } else {
-              setError('Categories are not loaded yet. Please wait and try again.');
-            }
+            setFormData({
+              ...formData,
+              category: categories.length > 0 ? categories[0]._id : ''
+            });
+            setShowModal(true);
           }}
           className="bg-blue-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-700 transition whitespace-nowrap text-sm"
-          disabled={categories.length === 0}
         >
           Add Product
         </button>
@@ -407,7 +406,7 @@ const Inventory = () => {
                         required
                       />
                     </div>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         SKU *
@@ -422,7 +421,7 @@ const Inventory = () => {
                         required
                       />
                     </div>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Color
@@ -436,7 +435,7 @@ const Inventory = () => {
                         placeholder="e.g. Black, White, Red"
                       />
                     </div>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Category *
@@ -465,7 +464,7 @@ const Inventory = () => {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Location
@@ -479,8 +478,8 @@ const Inventory = () => {
                         placeholder="e.g. Shelf A, Bin 5"
                       />
                     </div>
-                                          
-                    
+
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Supplier
@@ -500,7 +499,7 @@ const Inventory = () => {
                       </select>
                     </div>
                   </div>
-                  
+
                   <div>
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -515,7 +514,7 @@ const Inventory = () => {
                         min="0"
                       />
                     </div>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Minimum Stock Alert
@@ -529,7 +528,7 @@ const Inventory = () => {
                         min="0"
                       />
                     </div>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Cost Price (Rs)
@@ -544,7 +543,7 @@ const Inventory = () => {
                         min="0"
                       />
                     </div>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Selling Price (Rs)
@@ -731,8 +730,8 @@ const Inventory = () => {
                 ))}
               </tbody>
             </table>
-          <div className="h-4"></div>
-        </div>
+            <div className="h-4"></div>
+          </div>
         )}
       </div>
     </div>

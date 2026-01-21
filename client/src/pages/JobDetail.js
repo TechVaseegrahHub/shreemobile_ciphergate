@@ -55,7 +55,7 @@ const JobDetail = () => {
       navigate('/admin/login');
     }
   }, [navigate]);
-  
+
   // Fetch available parts for selection
   useEffect(() => {
     const fetchParts = async () => {
@@ -67,10 +67,10 @@ const JobDetail = () => {
         console.error('Failed to fetch parts:', err);
       }
     };
-    
+
     fetchParts();
   }, []);
-  
+
   // Fetch categories and suppliers for new product form
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -79,17 +79,17 @@ const JobDetail = () => {
           api.get('/categories'),
           api.get('/suppliers')
         ]);
-        
+
         setCategories(categoriesRes.data);
         setSuppliers(suppliersRes.data);
       } catch (err) {
         console.error('Failed to fetch dropdown data:', err);
       }
     };
-    
+
     fetchDropdownData();
   }, []);
-  
+
   // Update filtered parts when available parts change
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -115,7 +115,7 @@ const JobDetail = () => {
       setLoading(false);
     }
   }, [id]);
-  
+
   // Update discountAmount and serviceCharges when job changes
   useEffect(() => {
     if (job) {
@@ -127,7 +127,7 @@ const JobDetail = () => {
   useEffect(() => {
     fetchJob();
   }, [fetchJob]);
-  
+
   // Scroll to top when success message appears
   useEffect(() => {
     if (success) {
@@ -137,7 +137,7 @@ const JobDetail = () => {
 
   // Get status color
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'Intake': return 'bg-gray-200 text-gray-800';
       case 'In Progress': return 'bg-blue-100 text-blue-800';
       case 'Done': return 'bg-green-100 text-green-800';
@@ -146,12 +146,12 @@ const JobDetail = () => {
       default: return 'bg-yellow-100 text-yellow-800';
     }
   };
-  
+
   // Handle search input change
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     if (value.trim() === '') {
       setFilteredParts(availableParts);
     } else {
@@ -162,7 +162,7 @@ const JobDetail = () => {
       setFilteredParts(filtered);
     }
   };
-  
+
   // Toggle parts dropdown
   const togglePartsDropdown = () => {
     setShowPartsDropdown(!showPartsDropdown);
@@ -171,7 +171,7 @@ const JobDetail = () => {
       setSearchTerm('');
     }
   };
-  
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -179,18 +179,18 @@ const JobDetail = () => {
         setShowPartsDropdown(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  
+
   // Open new product modal
   const openNewProductModal = () => {
     setShowNewProductModal(true);
   };
-  
+
   // Close new product modal
   const closeNewProductModal = () => {
     setShowNewProductModal(false);
@@ -207,7 +207,7 @@ const JobDetail = () => {
       color: ''
     });
   };
-  
+
   // Handle changes in new product form
   const handleNewProductChange = (e) => {
     const { name, value } = e.target;
@@ -216,17 +216,17 @@ const JobDetail = () => {
       [name]: value
     }));
   };
-  
+
   // Handle adding new product
   const handleAddNewProduct = async (e) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!newProductForm.name || !newProductForm.sku || !newProductForm.category) {
       setError('Please fill in all required fields: Name, SKU, and Category');
       return;
     }
-    
+
     try {
       // Prepare data for submission, ensuring proper data types
       const submitData = {
@@ -241,21 +241,21 @@ const JobDetail = () => {
         supplier: newProductForm.supplier || undefined,
         color: newProductForm.color
       };
-      
+
       const response = await api.post('/inventory', submitData);
-      
+
       // Add the new part to the available parts and filtered parts lists
       setAvailableParts(prev => [...prev, response.data]);
       setFilteredParts(prev => [...prev, response.data]);
-      
+
       // Automatically select the newly added part
       setNewPart(prev => ({
         ...prev,
         part: response.data._id
       }));
-      
+
       setSuccess('New product added successfully!');
-      
+
       // Reset the form
       setNewProductForm({
         name: '',
@@ -269,7 +269,7 @@ const JobDetail = () => {
         location: '',
         color: ''
       });
-      
+
       // Close the modal
       setShowNewProductModal(false);
     } catch (err) {
@@ -288,7 +288,7 @@ const JobDetail = () => {
       }
     }
   };
-  
+
   // Send WhatsApp completion notification
   const sendWhatsAppCompletionNotification = async () => {
     if (!job || !job.customer?.phone) {
@@ -298,7 +298,7 @@ const JobDetail = () => {
 
     try {
       setSendingWhatsApp(true);
-      
+
       // Prepare job data for WhatsApp template
       const jobData = {
         customerName: job.customer?.name || 'Customer',
@@ -310,7 +310,7 @@ const JobDetail = () => {
 
       // Call WhatsApp service to send completion notification
       const result = await WhatsAppService.sendJobCompletionNotification(id);
-      
+
       console.log('WhatsApp completion notification sent:', result);
       return true;
     } catch (error) {
@@ -329,7 +329,7 @@ const JobDetail = () => {
       const totalAmount = job.final_customer_price || job.total_amount || 0;
       const advancePayment = job.advance_payment || 0;
       const balanceAmount = totalAmount - advancePayment;
-      
+
       // Second confirmation for balance collection
       if (balanceAmount > 0) {
         const collectedBalance = window.confirm(
@@ -338,7 +338,7 @@ const JobDetail = () => {
           `• Click OK if you have collected\n` +
           `• Click Cancel if not collected yet`
         );
-        
+
         if (!collectedBalance) {
           // Show option to proceed anyway
           const proceedAnyway = window.confirm(
@@ -346,42 +346,42 @@ const JobDetail = () => {
             `The customer will be notified that their device is ready for pickup.\n\n` +
             `Click OK to continue or Cancel to go back.`
           );
-          
+
           if (!proceedAnyway) {
             return;
           }
         }
       }
-      
+
       // Proceed with completion
       completeJob();
     }
   };
-  
+
   // Complete the job
   const completeJob = async () => {
     try {
       setUpdating(true);
-      
+
       // Update job status to "Done"
       const updateResponse = await api.put(`/jobs/${id}/update`, {
         status: 'Done',
         repair_done_time: new Date()
       });
-      
+
       if (updateResponse.data.success) {
         // Send WhatsApp completion notification
         const whatsappSent = await sendWhatsAppCompletionNotification();
-        
+
         if (whatsappSent) {
           setSuccess('Job marked as completed successfully! WhatsApp notification sent to customer.');
         } else {
           setSuccess('Job marked as completed successfully! (WhatsApp notification failed to send)');
         }
-        
+
         // Update job data
         setJob(updateResponse.data.job);
-        
+
         // Clear success message after 5 seconds
         setTimeout(() => setSuccess(''), 5000);
       }
@@ -392,27 +392,27 @@ const JobDetail = () => {
       setUpdating(false);
     }
   };
-  
+
   // Cancel the job
   const cancelJob = async () => {
     if (!cancellationReason.trim()) {
       setError('Please provide a reason for cancellation');
       return;
     }
-    
+
     try {
       setCancelling(true);
-      
+
       const response = await api.put(`/jobs/${id}/cancel`, {
         cancellation_reason: cancellationReason
       });
-      
+
       if (response.data.success) {
         setSuccess('Job cancelled successfully!');
         setJob(response.data.job); // Update job status in UI
         setShowCancelModal(false);
         setCancellationReason(''); // Clear the reason
-        
+
         // Clear success message after 5 seconds
         setTimeout(() => setSuccess(''), 5000);
       }
@@ -423,31 +423,31 @@ const JobDetail = () => {
       setCancelling(false);
     }
   };
-  
+
   // Update discount amount
   const updateDiscount = async () => {
     try {
       setUpdating(true);
-      
+
       const discountValue = (discountAmount === '' || discountAmount === null) ? 0 : parseFloat(discountAmount) || 0;
-      
+
       // Validate that discount is not greater than total amount
       const totalAmount = job.total_amount || 0;
       if (discountValue > totalAmount) {
         setError(`Discount cannot be greater than total amount (Rs ${totalAmount.toFixed(2)})`);
         return;
       }
-      
+
       const response = await api.put(`/jobs/${id}/update`, {
         discount_amount: discountValue
       });
-      
+
       if (response.data.success) {
         setJob(response.data.job);
         setDiscountAmount(response.data.job.discount_amount || '');
         setSuccess('Discount updated successfully!');
         setIsEditingDiscount(false);
-        
+
         // Clear success message after 5 seconds
         setTimeout(() => setSuccess(''), 5000);
       }
@@ -458,29 +458,29 @@ const JobDetail = () => {
       setUpdating(false);
     }
   };
-  
+
   // Update service charges
   const updateServiceCharges = async () => {
     try {
       setUpdating(true);
-      
+
       const serviceChargesValue = (serviceCharges === '' || serviceCharges === null) ? 0 : parseFloat(serviceCharges) || 0;
-      
+
       // Calculate the difference to add to the existing total
       const serviceChargesDiff = serviceChargesValue - (job.service_charges || 0);
       const newTotalAmount = (job.total_amount || 0) + serviceChargesDiff;
-      
+
       const response = await api.put(`/jobs/${id}/update`, {
         service_charges: serviceChargesValue,
         total_amount: newTotalAmount
       });
-      
+
       if (response.data.success) {
         setJob(response.data.job);
         setServiceCharges(response.data.job.service_charges || '');
         setSuccess('Service charges updated successfully!');
         setIsEditingServiceCharges(false);
-        
+
         // Clear success message after 5 seconds
         setTimeout(() => setSuccess(''), 5000);
       }
@@ -491,20 +491,20 @@ const JobDetail = () => {
       setUpdating(false);
     }
   };
-  
+
   // Resend WhatsApp notification (for cases where it failed)
   const resendWhatsAppNotification = async () => {
     if (window.confirm('Resend WhatsApp completion notification to customer?')) {
       try {
         setSendingWhatsApp(true);
         const whatsappSent = await sendWhatsAppCompletionNotification();
-        
+
         if (whatsappSent) {
           setSuccess('WhatsApp notification resent successfully!');
         } else {
           setError('Failed to resend WhatsApp notification');
         }
-        
+
         setTimeout(() => {
           setSuccess('');
           setError('');
@@ -517,27 +517,27 @@ const JobDetail = () => {
       }
     }
   };
-  
+
   // Add part to job
   const addPartToJob = async () => {
     if (!newPart.part || newPart.quantity <= 0) {
       setError('Please select a part and enter a valid quantity');
       return;
     }
-    
+
     try {
       setUpdating(true);
-      
+
       // Get current parts used
       const currentParts = job.parts_used || [];
-      
+
       // Check if part already exists
       const existingPartIndex = currentParts.findIndex(p => {
         const partId = typeof p.part === 'object' ? p.part._id : p.part;
         return partId === newPart.part;
       });
       let updatedParts;
-      
+
       if (existingPartIndex >= 0) {
         // Update existing part quantity
         updatedParts = [...currentParts];
@@ -553,12 +553,12 @@ const JobDetail = () => {
           }
         ];
       }
-      
+
       // Update job
       const response = await api.put(`/jobs/${id}/update`, {
         parts_used: updatedParts
       });
-      
+
       if (response.data.success) {
         setJob(response.data.job);
         setSuccess('Part added successfully!');
@@ -575,24 +575,24 @@ const JobDetail = () => {
       setUpdating(false);
     }
   };
-  
+
   // Remove part from job
   const removePartFromJob = async (partIndex) => {
     if (window.confirm('Are you sure you want to remove this part?')) {
       try {
         setUpdating(true);
-        
+
         // Get current parts used
         const currentParts = job.parts_used || [];
-        
+
         // Remove part at index
         const updatedParts = currentParts.filter((_, index) => index !== partIndex);
-        
+
         // Update job
         const response = await api.put(`/jobs/${id}/update`, {
           parts_used: updatedParts
         });
-        
+
         if (response.data.success) {
           setJob(response.data.job);
           setSuccess('Part removed successfully!');
@@ -606,7 +606,7 @@ const JobDetail = () => {
       }
     }
   };
-  
+
   // Handle part cost change
   const handlePartCostChange = (index, newCost) => {
     setEditedParts(prev => ({
@@ -614,12 +614,12 @@ const JobDetail = () => {
       [index]: parseFloat(newCost) || 0
     }));
   };
-  
+
   // Save edited part costs
   const saveEditedPartCosts = async () => {
     try {
       setUpdating(true);
-      
+
       // Create updated parts array with edited costs
       const updatedParts = job.parts_used.map((part, index) => {
         if (editedParts[index] !== undefined) {
@@ -631,12 +631,12 @@ const JobDetail = () => {
         }
         return part;
       });
-      
+
       // Update job with edited parts
       const response = await api.put(`/jobs/${id}/update`, {
         parts_used: updatedParts
       });
-      
+
       if (response.data.success) {
         setJob(response.data.job);
         setEditedParts({}); // Clear edited parts
@@ -650,25 +650,25 @@ const JobDetail = () => {
       setUpdating(false);
     }
   };
-  
+
   // Calculate total parts cost
   const calculatePartsCost = () => {
     if (!job.parts_used || job.parts_used.length === 0) return 0;
-    
+
     return job.parts_used.reduce((total, partUsed, index) => {
       // Extract part data - handle both populated and unpopulated cases
       const partData = partUsed.part;
-      
+
       // Get part cost with fallbacks
       let partCostPrice = 0;
-      
+
       // Handle case where partData is a populated object
       if (partData && typeof partData === 'object') {
         if (partData.cost_price !== undefined) {
           partCostPrice = partData.cost_price;
         }
       }
-      
+
       // If we have availableParts and partData has an _id, try to get more detailed info
       if (availableParts && partData && partData._id) {
         const foundPart = availableParts.find(p => p._id === partData._id);
@@ -676,33 +676,33 @@ const JobDetail = () => {
           partCostPrice = foundPart.cost_price;
         }
       }
-      
+
       // Use edited cost if available, otherwise use original cost
       const unitCost = editedParts[index] !== undefined ? editedParts[index] : partCostPrice;
       const quantity = partUsed.quantity || 0;
-      
+
       return total + (unitCost * quantity);
     }, 0);
   };
-  
+
   // Calculate total parts revenue (selling price - cost price)
   const calculatePartsRevenue = () => {
     if (!job.parts_used || job.parts_used.length === 0) return 0;
-    
+
     return job.parts_used.reduce((total, partUsed, index) => {
       // Extract part data - handle both populated and unpopulated cases
       const partData = partUsed.part;
-      
+
       // Get cost and selling prices with fallbacks
       let partCostPrice = 0;
       let partSellingPrice = 0;
-      
+
       // Handle case where partData is a populated object
       if (partData && typeof partData === 'object') {
         if (partData.cost_price !== undefined) partCostPrice = partData.cost_price;
         if (partData.selling_price !== undefined) partSellingPrice = partData.selling_price;
       }
-      
+
       // If we have availableParts and partData has an _id, try to get more detailed info
       if (availableParts && partData && partData._id) {
         const foundPart = availableParts.find(p => p._id === partData._id);
@@ -711,29 +711,29 @@ const JobDetail = () => {
           if (foundPart.selling_price !== undefined) partSellingPrice = foundPart.selling_price;
         }
       }
-      
+
       // Use edited cost if available for this specific job
       const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : partCostPrice;
       const unitSellingPrice = partSellingPrice;
       const quantity = partUsed.quantity || 0;
-      
+
       // Calculate revenue per unit (selling price - cost price)
       const unitRevenue = unitSellingPrice - unitCost;
       const totalRevenue = unitRevenue * quantity;
-      
+
       return total + totalRevenue;
     }, 0);
   };
-  
+
   const downloadPDF = async () => {
     if (!job) return;
-    
+
     try {
       // Date formatting logic
       const dateObj = new Date(job.repair_job_taken_time || Date.now());
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       const formattedDate = `${dateObj.getDate()}/${monthNames[dateObj.getMonth()]}/${dateObj.getFullYear()}`;
-      
+
       // Create a temporary HTML element for the PDF content
       const pdfContent = document.createElement('div');
       pdfContent.style.width = '210mm'; // A4 width
@@ -743,8 +743,8 @@ const JobDetail = () => {
       pdfContent.style.boxSizing = 'border-box';
       pdfContent.style.position = 'absolute';
       pdfContent.style.left = '-9999px'; // Hide from view
-      pdfContent.style.fontFamily = "'Nirmala UI', 'Arial Unicode MS', 'Arial', sans-serif"; 
-      
+      pdfContent.style.fontFamily = "'Nirmala UI', 'Arial Unicode MS', 'Arial', sans-serif";
+
       pdfContent.innerHTML = `
         <div style="border: 1px solid #000; padding: 10px; height: 100%; position: relative;">
           
@@ -874,26 +874,26 @@ const JobDetail = () => {
               </thead>
               <tbody>
                 ${job.parts_used.map(partUsed => {
-                  // Extract part data
-                  const partData = partUsed.part;
-                  let partName = 'N/A';
-                  let partSku = 'N/A';
-                  let partCostPrice = 0;
-                  let partColor = 'N/A';
-                  
-                  // Handle case where partData is a populated object
-                  if (partData && typeof partData === 'object') {
-                    if (partData.name) partName = partData.name;
-                    if (partData.sku) partSku = partData.sku;
-                    if (partData.cost_price !== undefined) partCostPrice = partData.cost_price;
+        // Extract part data
+        const partData = partUsed.part;
+        let partName = 'N/A';
+        let partSku = 'N/A';
+        let partCostPrice = 0;
+        let partColor = 'N/A';
 
-                  }
-                  
-                  const quantity = partUsed.quantity || 0;
-                  const unitCost = (partUsed.edited_cost !== undefined ? partUsed.edited_cost : partCostPrice) || 0;
-                  const totalCost = unitCost * quantity;
-                  
-                  return `
+        // Handle case where partData is a populated object
+        if (partData && typeof partData === 'object') {
+          if (partData.name) partName = partData.name;
+          if (partData.sku) partSku = partData.sku;
+          if (partData.cost_price !== undefined) partCostPrice = partData.cost_price;
+
+        }
+
+        const quantity = partUsed.quantity || 0;
+        const unitCost = (partUsed.edited_cost !== undefined ? partUsed.edited_cost : partCostPrice) || 0;
+        const totalCost = unitCost * quantity;
+
+        return `
                   <tr style="height: 25px;">
                     <td style="border: 1px solid #000; padding: 3px; font-weight: bold;">${partName}</td>
                     <td style="border: 1px solid #000; padding: 3px;">${partSku}</td>
@@ -901,7 +901,7 @@ const JobDetail = () => {
                     <td style="border: 1px solid #000; padding: 3px; text-align: right;">Rs ${unitCost.toFixed(2)}</td>
                     <td style="border: 1px solid #000; padding: 3px; text-align: right;">Rs ${totalCost.toFixed(2)}</td>
                   </tr>`;
-                }).join('')}
+      }).join('')}
               </tbody>
             </table>
           </div>
@@ -1014,28 +1014,28 @@ const JobDetail = () => {
 
         </div>
       `;
-      
+
       document.body.appendChild(pdfContent);
-      
+
       // Use html2canvas to capture the content
       const canvas = await html2canvas(pdfContent, {
-        scale: 2, 
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
-      
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      
+
       // Save the PDF
       const filename = `Bill_${job.job_card_number || job._id}_${job.customer?.name || 'customer'}.pdf`;
       pdf.save(filename);
-      
+
       // Clean up
       document.body.removeChild(pdfContent);
     } catch (err) {
@@ -1079,9 +1079,9 @@ const JobDetail = () => {
           {success}
         </div>
       )}
-      
+
       <div className="mb-4">
-        <button 
+        <button
           onClick={() => navigate('/jobs')}
           className="flex items-center text-blue-600 hover:text-blue-800 mb-2 text-sm"
         >
@@ -1099,18 +1099,18 @@ const JobDetail = () => {
       {job.customer_photo && (
         <div className="bg-white rounded-lg shadow mb-6 p-4 flex flex-col items-center">
           <h2 className="text-lg font-semibold text-gray-800 mb-2">Customer Photo</h2>
-          <img 
-            src={job.customer_photo} 
-            alt="Customer" 
+          <img
+            src={job.customer_photo}
+            alt="Customer"
             className="w-24 h-24 object-cover rounded-full border-4 border-gray-200"
           />
         </div>
       )}
-      
+
       {/* Action Buttons */}
       <div className="bg-white rounded-lg shadow mb-6 p-4">
         <div className="flex flex-wrap gap-2">
-          <button 
+          <button
             onClick={downloadPDF}
             className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center text-sm"
           >
@@ -1119,9 +1119,9 @@ const JobDetail = () => {
             </svg>
             PDF
           </button>
-          
+
           {job.device_video && (
-            <button 
+            <button
               onClick={() => setShowVideo(!showVideo)}
               className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center text-sm"
             >
@@ -1131,9 +1131,9 @@ const JobDetail = () => {
               {showVideo ? 'Hide' : 'View'}
             </button>
           )}
-          
+
           {job.status === 'Done' && (
-            <button 
+            <button
               onClick={resendWhatsAppNotification}
               disabled={sendingWhatsApp || !job.customer?.phone}
               className={`px-3 py-2 text-white rounded flex items-center text-sm ${sendingWhatsApp ? 'bg-gray-400' : 'bg-purple-600 hover:bg-purple-700'} ${!job.customer?.phone ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -1156,9 +1156,9 @@ const JobDetail = () => {
               )}
             </button>
           )}
-          
+
           {job.status !== 'Done' && job.status !== 'Picked Up' && job.status !== 'Cancelled' && (
-            <button 
+            <button
               onClick={markAsCompleted}
               disabled={updating || sendingWhatsApp}
               className={`px-3 py-2 text-white rounded flex items-center text-sm ${(updating || sendingWhatsApp) ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
@@ -1181,9 +1181,9 @@ const JobDetail = () => {
               )}
             </button>
           )}
-          
+
           {job.status !== 'Done' && job.status !== 'Picked Up' && job.status !== 'Cancelled' && (
-            <button 
+            <button
               onClick={() => setShowCancelModal(true)}
               className="px-3 py-2 bg-red-600 text-white rounded flex items-center hover:bg-red-700 text-sm"
             >
@@ -1194,20 +1194,20 @@ const JobDetail = () => {
             </button>
           )}
         </div>
-        
+
         {showVideo && job.device_video && (
           <div className="mt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-2">Device Video</h3>
-            <video 
+            <video
               ref={videoRef}
-              src={job.device_video} 
+              src={job.device_video}
               controls
               className="w-full max-w-2xl rounded border"
             />
           </div>
         )}
       </div>
-      
+
       <div className="bg-white rounded-lg shadow mb-8">
         <div className="border-b border-gray-200 p-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -1240,7 +1240,7 @@ const JobDetail = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Device Information</h3>
               <div className="space-y-3">
@@ -1260,9 +1260,13 @@ const JobDetail = () => {
                   <p className="text-sm text-gray-500">Reported Issue</p>
                   <p className="font-medium">{job.reported_issue || 'N/A'}</p>
                 </div>
+                <div>
+                  <p className="text-sm text-gray-500">Created</p>
+                  <p className="font-medium">{job._id ? new Date(parseInt(job._id.substring(0, 8), 16) * 1000).toLocaleString() : 'N/A'}</p>
+                </div>
               </div>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Service Details</h3>
               <div className="space-y-3">
@@ -1284,717 +1288,757 @@ const JobDetail = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Financials</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Service Charges</p>
-                    {isEditingServiceCharges ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium">Rs</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={serviceCharges || ''}
-                          onChange={(e) => setServiceCharges(e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
-                          onWheel={(e) => e.target.blur()}
-                          className="w-24 px-2 py-1 border border-gray-300 rounded text-right hide-spinner"
-                        />
-                      </div>
-                    ) : (
-                      <p className="font-medium">Rs {job.service_charges ? (job.service_charges).toFixed(2) : '0.00'}</p>
-                    )}
-                  </div>
-                  <div className="flex space-x-2">
-                    {isEditingServiceCharges && (
-                      <button
-                        onClick={() => setIsEditingServiceCharges(false)}
-                        className="text-sm px-2 py-1 bg-gray-500 text-white rounded"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        if (isEditingServiceCharges) {
-                          updateServiceCharges();
-                        } else {
-                          setIsEditingServiceCharges(true);
-                        }
-                      }}
-                      disabled={updating}
-                      className={`text-sm px-2 py-1 rounded ${isEditingServiceCharges ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {isEditingServiceCharges ? 'Save' : 'Edit'}
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Parts Cost</p>
-                  <p className="font-medium">Rs {job.parts_cost?.toFixed(2) || '0.00'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Advance Payment</p>
-                  <p className="font-medium">Rs {job.advance_payment?.toFixed(2) || '0.00'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Total Amount</p>
-                  <p className="font-medium">Rs {job.total_amount?.toFixed(2) || '0.00'}</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Discount</p>
-                    {isEditingDiscount ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium">Rs</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={discountAmount || ''}
-                          onChange={(e) => setDiscountAmount(e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
-                          onWheel={(e) => e.target.blur()}
-                          className="w-24 px-2 py-1 border border-gray-300 rounded text-right hide-spinner"
-                        />
-                      </div>
-                    ) : (
-                      <p className="font-medium">Rs {job.discount_amount ? (job.discount_amount).toFixed(2) : '0.00'}</p>
-                    )}
-                  </div>
-                  <div className="flex space-x-2">
-                    {isEditingDiscount && (
-                      <button
-                        onClick={() => setIsEditingDiscount(false)}
-                        className="text-sm px-2 py-1 bg-gray-500 text-white rounded"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        if (isEditingDiscount) {
-                          updateDiscount();
-                        } else {
-                          setIsEditingDiscount(true);
-                        }
-                      }}
-                      disabled={updating}
-                      className={`text-sm px-2 py-1 rounded ${isEditingDiscount ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {isEditingDiscount ? 'Save' : 'Edit'}
-                    </button>
-                  </div>
-                </div>
-                <style>{`
-                  .hide-spinner::-webkit-outer-spin-button,
-                  .hide-spinner::-webkit-inner-spin-button {
-                    -webkit-appearance: none;
-                    margin: 0;
-                  }
-                  .hide-spinner {
-                    -moz-appearance: textfield;
-                  }
-                `}</style>
-                <div>
-                  <p className="text-sm text-gray-500">Net Amount</p>
-                  <p className="font-medium text-green-600">
-                    Rs {((job.total_amount || 0) - (job.discount_amount || 0)).toFixed(2)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Balance Amount</p>
-                  <p className="font-medium text-blue-600">
-                    Rs {(((job.total_amount || 0) - (job.discount_amount || 0)) - (job.advance_payment || 0)).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow mb-8">
-        <div className="border-b border-gray-200 p-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <h2 className="text-lg font-semibold text-gray-800">Parts Used</h2>
-            <button 
-              onClick={() => setShowPartsModal(true)}
-              className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center text-sm"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              Add Part
-            </button>
-          </div>
-        </div>
-        
-        {job.parts_used && job.parts_used.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Part Name</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">SKU</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Type</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Cost</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {job.parts_used.map((part, index) => {
-                  // Extract part data - handle both populated and unpopulated cases
-                  const partData = part.part;
-                  
-                  // Get part details with fallbacks
-                  let partName = 'N/A';
-                  let partSku = 'N/A';
-                  let partCostPrice = 0;
-                  
-                  // Handle case where partData is a populated object
-                  if (partData && typeof partData === 'object') {
-                    if (partData.name) {
-                      partName = partData.name;
-                    }
-                    if (partData.sku) {
-                      partSku = partData.sku;
-                    }
-                    if (partData.cost_price !== undefined) {
-                      partCostPrice = partData.cost_price;
-                    }
-                  }
-                  
-                  // If we have availableParts and partData has an _id, try to get more detailed info
-                  if (availableParts && partData && partData._id) {
-                    const foundPart = availableParts.find(p => p._id === partData._id);
-                    if (foundPart) {
-                      partName = foundPart.name || partName;
-                      partSku = foundPart.sku || partSku;
-                      partCostPrice = foundPart.cost_price !== undefined ? foundPart.cost_price : partCostPrice;
-                    }
-                  }
-                  
-                  // Use edited cost if available, otherwise use original cost
-                  const displayUnitCost = editedParts[index] !== undefined ? editedParts[index] : partCostPrice;
-                  const quantity = part.quantity || 0;
-                  const totalCost = displayUnitCost * quantity;
-                  
-                  return (
-                    <tr key={index}>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-[100px]">{partName}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">{partSku}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">{quantity}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">{part.price_type || 'N/A'}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={displayUnitCost}
-                          onChange={(e) => handlePartCostChange(index, e.target.value)}
-                          className="w-20 px-2 py-1 border border-gray-300 rounded text-right text-sm"
-                        />
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">Rs {totalCost.toFixed(2)}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                        <button 
-                          onClick={() => removePartFromJob(index)}
-                          className="text-red-600 hover:text-red-900 text-sm"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            
-            {/* Revenue Calculation */}
-            <div className="p-4 border-t border-gray-200">
-              <div className="flex justify-end">
-                <div className="w-full max-w-xs">
-                  <div className="flex justify-between py-1 text-sm">
-                    <span className="font-medium">Parts Cost:</span>
-                    <span>Rs {calculatePartsCost().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between py-1 text-sm">
-                    <span className="font-medium">Service Charges:</span>
-                    <span>Rs {(job.service_charges || 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-t border-gray-300 text-sm">
-                    <span className="font-bold">Total Cost:</span>
-                    <span className="font-bold">Rs {(calculatePartsCost() + (job.service_charges || 0)).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between py-1 text-sm">
-                    <span className="font-medium">Final Price:</span>
-                    <span>Rs {(job.final_customer_price || job.total_amount || 0).toFixed(2)}</span>
-                  </div>
-                  {Object.keys(editedParts).length > 0 && (
-                    <div className="flex justify-end py-2">
-                      <button 
-                        onClick={saveEditedPartCosts}
-                        disabled={updating}
-                        className={`px-3 py-1 bg-green-600 text-white rounded text-sm ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {updating ? 'Saving...' : 'Save Changes'}
-                      </button>
-                    </div>
-                  )}
-                  
-                  {/* Revenue Section */}
-                  <div className="pt-3 border-t border-gray-300 bg-gray-50 p-2 rounded text-sm">
-                    <div className="font-bold mb-2 text-center">Revenue Details</div>
-                    
-                    {/* Service Charges Revenue */}
-                    <div className="flex justify-between py-1">
-                      <span>Service Charges Revenue:</span>
-                      <span className="font-medium">Rs {(job.service_charges || 0).toFixed(2)}</span>
-                    </div>
-                    
-                    {/* Parts Revenue Breakdown */}
-                    {job.parts_used && job.parts_used.length > 0 && (
-                      <div className="mt-1">
-                        <div className="font-medium text-sm mb-1">Parts Revenue Breakdown:</div>
-                        {job.parts_used.map((partUsed, index) => {
-                          const partData = partUsed.part;
-                          let partName = 'N/A';
-                          let costPrice = 0;
-                          let sellingPrice = 0;
-                          let revenue = 0;
-                          
-                          // Handle case where partData is a populated object
-                          if (partData && typeof partData === 'object') {
-                            if (partData.name) partName = partData.name;
-                            if (partData.cost_price !== undefined) costPrice = partData.cost_price;
-                            if (partData.selling_price !== undefined) sellingPrice = partData.selling_price;
-                          }
-                          
-                          // If we have availableParts and partData has an _id, try to get more detailed info
-                          if (availableParts && partData && partData._id) {
-                            const foundPart = availableParts.find(p => p._id === partData._id);
-                            if (foundPart) {
-                              partName = foundPart.name || partName;
-                              costPrice = foundPart.cost_price !== undefined ? foundPart.cost_price : costPrice;
-                              sellingPrice = foundPart.selling_price !== undefined ? foundPart.selling_price : sellingPrice;
-                            }
-                          }
-                          
-                          // Use edited cost if available for this specific job
-                          const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : costPrice;
-                          const unitSellingPrice = sellingPrice;
-                          const quantity = partUsed.quantity || 0;
-                          
-                          // Calculate revenue per unit (selling price - cost price)
-                          const unitRevenue = unitSellingPrice - unitCost;
-                          revenue = unitRevenue * quantity;
-                          
-                          return (
-                            <div key={index} className="flex justify-between text-sm pl-2">
-                              <span className="truncate max-w-[120px]">{partName} (x{quantity}):</span>
-                              <span>Rs {revenue.toFixed(2)}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                    
-                    {/* Final Parts Revenue */}
-                    <div className="flex justify-between py-1 border-t border-gray-200 mt-1">
-                      <span>Final Parts Revenue:</span>
-                      <span className="font-medium">Rs {calculatePartsRevenue().toFixed(2)}</span>
-                    </div>
-                    
-                    {/* Total Revenue */}
-                    <div className="flex justify-between py-2 border-t border-gray-300 mt-1 bg-green-100 rounded">
-                      <span className="font-bold">Total Revenue:</span>
-                      <span className="font-bold text-green-600">
-                        Rs {((job.service_charges || 0) + calculatePartsRevenue()).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="p-6 text-center text-gray-500">
-            No parts used for this job. Click "Add Part" to add parts.
-          </div>
-        )}
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200 p-4">
-          <h2 className="text-lg font-semibold text-gray-800">Service Notes</h2>
-        </div>
-        <div className="p-4">
-          <p className="text-gray-700 text-sm">{job.service_notes || 'No service notes available.'}</p>
-        </div>
-      </div>
-      
-      {/* Add Part Modal */}
-      {showPartsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900">Add Part to Job</h3>
-            </div>
-            <div className="p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Payment & Revenue Summary</h3>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Part</label>
-                  
-                  <div className="mb-2">
-                    <button
-                      type="button"
-                      onClick={openNewProductModal}
-                      className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-100 rounded flex items-center"
-                    >
-                      <span className="mr-2">➕</span> Add New Product
-                    </button>
-                  </div>
-                  
-                  <div className="relative" ref={partsDropdownRef}>
-                    <div 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex justify-between items-center"
-                      onClick={togglePartsDropdown}
-                    >
-                      {newPart.part ? 
-                        (() => {
-                          const selectedPart = availableParts.find(p => p._id === newPart.part);
-                          return selectedPart ? selectedPart.name + ' (SKU: ' + selectedPart.sku + ')' : 'Select a part';
-                        })()
-                        : 'Select a part'}
-                      <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
+                {/* Service Revenue Section */}
+                <div className="border-b border-gray-200 pb-3">
+                  <h4 className="text-sm font-semibold text-blue-800 mb-2">Service Revenue</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Service Charges:</span>
+                      <div className="flex items-center gap-2">
+                        {isEditingServiceCharges ? (
+                          <div className="flex items-center">
+                            <span className="text-sm mr-1">Rs</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={serviceCharges}
+                              onChange={(e) => setServiceCharges(e.target.value)}
+                              className="w-24 px-2 py-1 border border-blue-300 rounded text-right focus:ring-1 focus:ring-blue-500 outline-none"
+                              autoFocus
+                            />
+                          </div>
+                        ) : (
+                          <span className="font-medium">Rs {parseFloat(serviceCharges || 0).toFixed(2)}</span>
+                        )}
+                        <button
+                          onClick={() => {
+                            if (isEditingServiceCharges) {
+                              updateServiceCharges();
+                            } else {
+                              setIsEditingServiceCharges(true);
+                            }
+                          }}
+                          className={`p-1 rounded hover:bg-gray-200 text-blue-600`}
+                        >
+                          {isEditingServiceCharges ?
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg> :
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                          }
+                        </button>
+                      </div>
                     </div>
-                    
-                    {showPartsDropdown && (
-                      <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-                        <div className="p-2 border-b border-gray-200 bg-gray-50">
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Discount:</span>
+                      <div className="flex items-center gap-2">
+                        {isEditingDiscount ? (
+                          <div className="flex items-center">
+                            <span className="text-sm mr-1">Rs</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={discountAmount}
+                              onChange={(e) => setDiscountAmount(e.target.value)}
+                              className="w-24 px-2 py-1 border border-blue-300 rounded text-right focus:ring-1 focus:ring-blue-500 outline-none"
+                              autoFocus
+                            />
+                          </div>
+                        ) : (
+                          <span className="font-medium text-red-600">- Rs {parseFloat(discountAmount || 0).toFixed(2)}</span>
+                        )}
+                        <button
+                          onClick={() => {
+                            if (isEditingDiscount) {
+                              updateDiscount();
+                            } else {
+                              setIsEditingDiscount(true);
+                            }
+                          }}
+                          className={`p-1 rounded hover:bg-gray-200 text-blue-600`}
+                        >
+                          {isEditingDiscount ?
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg> :
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                          }
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between py-1 border-t border-dashed border-gray-300">
+                      <span className="text-sm font-semibold">Net Service Revenue:</span>
+                      <span className="font-bold text-blue-700">Rs {(parseFloat(serviceCharges || 0) - parseFloat(discountAmount || 0)).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Parts Revenue Section */}
+                <div className="border-b border-gray-200 pb-3">
+                  <h4 className="text-sm font-semibold text-green-800 mb-2">Parts Revenue</h4>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Parts Cost:</span>
+                      <span>Rs {calculatePartsCost().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Parts Selling Price:</span>
+                      <span>Rs {(calculatePartsCost() + calculatePartsRevenue()).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-t border-dashed border-gray-300">
+                      <span className="text-sm font-semibold">Parts Profit:</span>
+                      <span className="font-bold text-green-700">Rs {calculatePartsRevenue().toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final Totals Section */}
+                <div className="bg-white p-3 rounded border border-gray-200 shadow-sm space-y-2">
+                  <div className="flex justify-between items-center text-sm font-bold text-gray-800">
+                    <span>Total Bill:</span>
+                    <span className="text-lg">Rs {((parseFloat(serviceCharges || 0) - parseFloat(discountAmount || 0)) + (calculatePartsCost() + calculatePartsRevenue())).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Advance Paid:</span>
+                    <span className="font-medium text-orange-600">- Rs {(job.advance_payment || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-t border-gray-300 bg-blue-50 px-2 -mx-2 mb-[-8px] rounded-b">
+                    <span className="font-bold text-gray-900">Balance Due:</span>
+                    <span className="font-bold text-blue-800 text-lg">
+                      Rs {((parseFloat(serviceCharges || 0) - parseFloat(discountAmount || 0)) + (calculatePartsCost() + calculatePartsRevenue()) - (job.advance_payment || 0)).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow mb-8">
+            <div className="border-b border-gray-200 p-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <h2 className="text-lg font-semibold text-gray-800">Parts Used</h2>
+                <button
+                  onClick={() => setShowPartsModal(true)}
+                  className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center text-sm"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  Add Part
+                </button>
+              </div>
+            </div>
+
+            {job.parts_used && job.parts_used.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Part Name</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">SKU</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Type</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Cost</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {job.parts_used.map((part, index) => {
+                      // Extract part data - handle both populated and unpopulated cases
+                      const partData = part.part;
+
+                      // Get part details with fallbacks
+                      let partName = 'N/A';
+                      let partSku = 'N/A';
+                      let partCostPrice = 0;
+
+                      // Handle case where partData is a populated object
+                      if (partData && typeof partData === 'object') {
+                        if (partData.name) {
+                          partName = partData.name;
+                        }
+                        if (partData.sku) {
+                          partSku = partData.sku;
+                        }
+                        if (partData.cost_price !== undefined) {
+                          partCostPrice = partData.cost_price;
+                        }
+                      }
+
+                      // If we have availableParts and partData has an _id, try to get more detailed info
+                      if (availableParts && partData && partData._id) {
+                        const foundPart = availableParts.find(p => p._id === partData._id);
+                        if (foundPart) {
+                          partName = foundPart.name || partName;
+                          partSku = foundPart.sku || partSku;
+                          partCostPrice = foundPart.cost_price !== undefined ? foundPart.cost_price : partCostPrice;
+                        }
+                      }
+
+                      // Use edited cost if available, otherwise use original cost
+                      const displayUnitCost = editedParts[index] !== undefined ? editedParts[index] : partCostPrice;
+                      const quantity = part.quantity || 0;
+                      const totalCost = displayUnitCost * quantity;
+
+                      return (
+                        <tr key={index}>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-[100px]">{partName}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">{partSku}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">{quantity}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">{part.price_type || 'N/A'}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={displayUnitCost}
+                              onChange={(e) => handlePartCostChange(index, e.target.value)}
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-right text-sm"
+                            />
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">Rs {totalCost.toFixed(2)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                            <button
+                              onClick={() => removePartFromJob(index)}
+                              className="text-red-600 hover:text-red-900 text-sm"
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                {/* Revenue Calculation */}
+                <div className="p-4 border-t border-gray-200">
+                  <div className="flex justify-end">
+                    <div className="w-full max-w-xs">
+                      <div className="flex justify-between py-1 text-sm">
+                        <span className="font-medium">Parts Cost:</span>
+                        <span>Rs {calculatePartsCost().toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between py-1 text-sm">
+                        <span className="font-medium">Service Charges:</span>
+                        <span>Rs {(job.service_charges || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-t border-gray-300 text-sm">
+                        <span className="font-bold">Total Cost:</span>
+                        <span className="font-bold">Rs {(calculatePartsCost() + (job.service_charges || 0)).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between py-1 text-sm">
+                        <span className="font-medium">Final Price:</span>
+                        <span>Rs {(job.final_customer_price || job.total_amount || 0).toFixed(2)}</span>
+                      </div>
+                      {Object.keys(editedParts).length > 0 && (
+                        <div className="flex justify-end py-2">
+                          <button
+                            onClick={saveEditedPartCosts}
+                            disabled={updating}
+                            className={`px-3 py-1 bg-green-600 text-white rounded text-sm ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {updating ? 'Saving...' : 'Save Changes'}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Revenue Section */}
+                      <div className="pt-3 border-t border-gray-300 bg-gray-50 p-2 rounded text-sm">
+                        <div className="font-bold mb-2 text-center">Revenue Details</div>
+
+                        {/* Service Charges Revenue */}
+                        <div className="flex justify-between py-1">
+                          <span>Service Charges Revenue:</span>
+                          <span className="font-medium">Rs {(job.service_charges || 0).toFixed(2)}</span>
+                        </div>
+
+                        {/* Parts Revenue Breakdown */}
+                        {job.parts_used && job.parts_used.length > 0 && (
+                          <div className="mt-1">
+                            <div className="font-medium text-sm mb-1">Parts Revenue Breakdown:</div>
+                            {job.parts_used.map((partUsed, index) => {
+                              const partData = partUsed.part;
+                              let partName = 'N/A';
+                              let costPrice = 0;
+                              let sellingPrice = 0;
+                              let revenue = 0;
+
+                              // Handle case where partData is a populated object
+                              if (partData && typeof partData === 'object') {
+                                if (partData.name) partName = partData.name;
+                                if (partData.cost_price !== undefined) costPrice = partData.cost_price;
+                                if (partData.selling_price !== undefined) sellingPrice = partData.selling_price;
+                              }
+
+                              // If we have availableParts and partData has an _id, try to get more detailed info
+                              if (availableParts && partData && partData._id) {
+                                const foundPart = availableParts.find(p => p._id === partData._id);
+                                if (foundPart) {
+                                  partName = foundPart.name || partName;
+                                  costPrice = foundPart.cost_price !== undefined ? foundPart.cost_price : costPrice;
+                                  sellingPrice = foundPart.selling_price !== undefined ? foundPart.selling_price : sellingPrice;
+                                }
+                              }
+
+                              // Use edited cost if available for this specific job
+                              const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : costPrice;
+                              const unitSellingPrice = sellingPrice;
+                              const quantity = partUsed.quantity || 0;
+
+                              // Calculate revenue per unit (selling price - cost price)
+                              const unitRevenue = unitSellingPrice - unitCost;
+                              revenue = unitRevenue * quantity;
+
+                              return (
+                                <div key={index} className="flex justify-between text-sm pl-2">
+                                  <span className="truncate max-w-[120px]">{partName} (x{quantity}):</span>
+                                  <span>Rs {revenue.toFixed(2)}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Final Parts Revenue */}
+                        <div className="flex justify-between py-1 border-t border-gray-200 mt-1">
+                          <span>Final Parts Revenue:</span>
+                          <span className="font-medium">Rs {calculatePartsRevenue().toFixed(2)}</span>
+                        </div>
+
+                        {/* Total Shop Profit */}
+                        <div className="flex justify-between py-2 border-t border-gray-300 mt-2 bg-green-100 rounded px-2">
+                          <span className="font-bold text-green-800">Total Shop Profit:</span>
+                          <span className="font-bold text-green-700 text-lg">
+                            Rs {((parseFloat(serviceCharges || 0) - parseFloat(discountAmount || 0)) + calculatePartsRevenue()).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 text-center text-gray-500">
+                No parts used for this job. Click "Add Part" to add parts.
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow">
+            <div className="border-b border-gray-200 p-4">
+              <h2 className="text-lg font-semibold text-gray-800">Service Notes</h2>
+            </div>
+            <div className="p-4">
+              <p className="text-gray-700 text-sm">{job.service_notes || 'No service notes available.'}</p>
+            </div>
+          </div>
+
+          {/* Add Part Modal */}
+          {showPartsModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                <div className="border-b border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900">Add Part to Job</h3>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Select Part</label>
+
+                      <div className="mb-2">
+                        <button
+                          type="button"
+                          onClick={openNewProductModal}
+                          className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-100 rounded flex items-center"
+                        >
+                          <span className="mr-2">➕</span> Add New Product
+                        </button>
+                      </div>
+
+                      <div className="relative" ref={partsDropdownRef}>
+                        <div
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 cursor-pointer flex justify-between items-center"
+                          onClick={togglePartsDropdown}
+                        >
+                          {newPart.part ?
+                            (() => {
+                              const selectedPart = availableParts.find(p => p._id === newPart.part);
+                              return selectedPart ? selectedPart.name + ' (SKU: ' + selectedPart.sku + ')' : 'Select a part';
+                            })()
+                            : 'Select a part'}
+                          <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+
+                        {showPartsDropdown && (
+                          <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                            <div className="p-2 border-b border-gray-200 bg-gray-50">
+                              <input
+                                type="text"
+                                placeholder="Search parts..."
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="w-full px-3 py-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                onClick={(e) => e.stopPropagation()} // Prevent click from bubbling up
+                              />
+                            </div>
+                            <div className="py-2">
+                              {filteredParts.length > 0 ? (
+                                filteredParts.map(part => (
+                                  <div
+                                    key={part._id}
+                                    className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                    onClick={() => {
+                                      setNewPart({ ...newPart, part: part._id });
+                                      setShowPartsDropdown(false);
+                                    }}
+                                  >
+                                    <div className="font-medium">{part.name}</div>
+                                    <div className="text-sm text-gray-500">SKU: {part.sku} - Rs {part.cost_price?.toFixed(2) || '0.00'}</div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="p-3 text-gray-500 text-center">No parts found</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={newPart.quantity}
+                        onChange={(e) => setNewPart({ ...newPart, quantity: parseInt(e.target.value) || 1 })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price Type</label>
+                      <select
+                        value={newPart.price_type}
+                        onChange={(e) => setNewPart({ ...newPart, price_type: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="Internal">Internal</option>
+                        <option value="Outsourced">Outsourced</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="button"
+                    onClick={addPartToJob}
+                    disabled={updating}
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${updating ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm`}
+                  >
+                    {updating ? 'Adding...' : 'Add Part'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPartsModal(false)}
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+          }
+
+          {/* Add New Product Modal */}
+          {
+            showNewProductModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                  <div className="border-b border-gray-200 px-6 py-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Add New Product</h3>
+                  </div>
+                  <form onSubmit={handleAddNewProduct}>
+                    <div className="px-6 py-4 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="mr-1">🔧</span> Part Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={newProductForm.name}
+                          onChange={handleNewProductChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="e.g. iPhone 12 Screen"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="mr-1">🏷️</span> SKU *
+                        </label>
+                        <input
+                          type="text"
+                          name="sku"
+                          value={newProductForm.sku}
+                          onChange={handleNewProductChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="e.g. SCR-IP12-BLK"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="mr-1">📂</span> Category *
+                        </label>
+                        <select
+                          name="category"
+                          value={newProductForm.category}
+                          onChange={handleNewProductChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          required
+                        >
+                          <option value="">Select a category</option>
+                          {categories.map(category => (
+                            <option key={category._id} value={category._id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="mr-1">🏢</span> Supplier
+                        </label>
+                        <select
+                          name="supplier"
+                          value={newProductForm.supplier}
+                          onChange={handleNewProductChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">Select a supplier</option>
+                          {suppliers.map(supplier => (
+                            <option key={supplier._id} value={supplier._id}>
+                              {supplier.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                            <span className="mr-1">💰</span> Cost Price (Rs)
+                          </label>
                           <input
-                            type="text"
-                            placeholder="Search parts..."
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            className="w-full px-3 py-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            onClick={(e) => e.stopPropagation()} // Prevent click from bubbling up
+                            type="number"
+                            name="cost_price"
+                            value={newProductForm.cost_price}
+                            onChange={handleNewProductChange}
+                            min="0"
+                            step="0.01"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
-                        <div className="py-2">
-                          {filteredParts.length > 0 ? (
-                            filteredParts.map(part => (
-                              <div
-                                key={part._id}
-                                className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                onClick={() => {
-                                  setNewPart({...newPart, part: part._id});
-                                  setShowPartsDropdown(false);
-                                }}
-                              >
-                                <div className="font-medium">{part.name}</div>
-                                <div className="text-sm text-gray-500">SKU: {part.sku} - Rs {part.cost_price?.toFixed(2) || '0.00'}</div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="p-3 text-gray-500 text-center">No parts found</div>
-                          )}
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                            <span className="mr-1">🏷️</span> Selling Price (Rs)
+                          </label>
+                          <input
+                            type="number"
+                            name="selling_price"
+                            value={newProductForm.selling_price}
+                            onChange={handleNewProductChange}
+                            min="0"
+                            step="0.01"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          />
                         </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={newPart.quantity}
-                    onChange={(e) => setNewPart({...newPart, quantity: parseInt(e.target.value) || 1})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price Type</label>
-                  <select
-                    value={newPart.price_type}
-                    onChange={(e) => setNewPart({...newPart, price_type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Internal">Internal</option>
-                    <option value="Outsourced">Outsourced</option>
-                  </select>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                            <span className="mr-1">📦</span> Stock Quantity
+                          </label>
+                          <input
+                            type="number"
+                            name="stock"
+                            value={newProductForm.stock}
+                            onChange={handleNewProductChange}
+                            min="0"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                            <span className="mr-1">⚠️</span> Min Stock Alert
+                          </label>
+                          <input
+                            type="number"
+                            name="min_stock_alert"
+                            value={newProductForm.min_stock_alert}
+                            onChange={handleNewProductChange}
+                            min="0"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="mr-1">📍</span> Location
+                        </label>
+                        <input
+                          type="text"
+                          name="location"
+                          value={newProductForm.location}
+                          onChange={handleNewProductChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="e.g. Shelf A, Bin 5"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <span className="mr-1">🎨</span> Color
+                        </label>
+                        <input
+                          type="text"
+                          name="color"
+                          value={newProductForm.color}
+                          onChange={handleNewProductChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter color (e.g. Black, White, Red)"
+                        />
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={closeNewProductModal}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Add Product
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
-            </div>
-            <div className="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse">
-              <button
-                type="button"
-                onClick={addPartToJob}
-                disabled={updating}
-                className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${updating ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm`}
-              >
-                {updating ? 'Adding...' : 'Add Part'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowPartsModal(false)}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+            )
+          }
+
+          {/* Cancel Job Modal */}
+          {
+            showCancelModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                  <div className="border-b border-gray-200 px-6 py-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Cancel Job</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Reason for Cancellation
+                      </label>
+                      <textarea
+                        value={cancellationReason}
+                        onChange={(e) => setCancellationReason(e.target.value)}
+                        rows="4"
+                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="Enter reason for cancelling this job..."
+                        disabled={cancelling}
+                      />
+                    </div>
+
+                    <div className="text-sm text-gray-500 mb-6">
+                      This job will be marked as cancelled and will no longer appear in active jobs.
+                    </div>
+
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => {
+                          setShowCancelModal(false);
+                          setCancellationReason('');
+                        }}
+                        disabled={cancelling}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={cancelJob}
+                        disabled={cancelling || !cancellationReason.trim()}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {cancelling ? 'Cancelling...' : 'Confirm Cancel'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+
+          {/* Worker Remarks Section - Displayed at the end */}
+          {
+            job.worker_remarks && (
+              <div className="bg-white rounded-lg shadow mt-6">
+                <div className="border-b border-gray-200 p-4">
+                  <h2 className="text-lg font-semibold text-gray-800">Worker Remarks</h2>
+                </div>
+                <div className="p-4">
+                  {/* Worker Information */}
+                  {(job.taken_by_worker || job.assigned_technician) && (
+                    <div className="mb-3 pb-3 border-b border-gray-100">
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        {job.taken_by_worker && (
+                          <div>
+                            <span className="font-medium text-gray-600">Taken By:</span>
+                            <span className="ml-1 text-gray-800">{job.taken_by_worker.name}</span>
+                          </div>
+                        )}
+                        {job.assigned_technician && (
+                          <div>
+                            <span className="font-medium text-gray-600">Assigned Technician:</span>
+                            <span className="ml-1 text-gray-800">{job.assigned_technician.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Remarks Content */}
+                  <p className="text-gray-700 whitespace-pre-wrap">{job.worker_remarks}</p>
+                </div>
+              </div>
+            )
+          }
         </div>
-      )}
-      
-      {/* Add New Product Modal */}
-      {showNewProductModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add New Product</h3>
-            </div>
-            <form onSubmit={handleAddNewProduct}>
-              <div className="px-6 py-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-1">🔧</span> Part Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newProductForm.name}
-                    onChange={handleNewProductChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. iPhone 12 Screen"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-1">🏷️</span> SKU *
-                  </label>
-                  <input
-                    type="text"
-                    name="sku"
-                    value={newProductForm.sku}
-                    onChange={handleNewProductChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. SCR-IP12-BLK"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-1">📂</span> Category *
-                  </label>
-                  <select
-                    name="category"
-                    value={newProductForm.category}
-                    onChange={handleNewProductChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map(category => (
-                      <option key={category._id} value={category._id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-1">🏢</span> Supplier
-                  </label>
-                  <select
-                    name="supplier"
-                    value={newProductForm.supplier}
-                    onChange={handleNewProductChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select a supplier</option>
-                    {suppliers.map(supplier => (
-                      <option key={supplier._id} value={supplier._id}>
-                        {supplier.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <span className="mr-1">💰</span> Cost Price (Rs)
-                    </label>
-                    <input
-                      type="number"
-                      name="cost_price"
-                      value={newProductForm.cost_price}
-                      onChange={handleNewProductChange}
-                      min="0"
-                      step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <span className="mr-1">🏷️</span> Selling Price (Rs)
-                    </label>
-                    <input
-                      type="number"
-                      name="selling_price"
-                      value={newProductForm.selling_price}
-                      onChange={handleNewProductChange}
-                      min="0"
-                      step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <span className="mr-1">📦</span> Stock Quantity
-                    </label>
-                    <input
-                      type="number"
-                      name="stock"
-                      value={newProductForm.stock}
-                      onChange={handleNewProductChange}
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <span className="mr-1">⚠️</span> Min Stock Alert
-                    </label>
-                    <input
-                      type="number"
-                      name="min_stock_alert"
-                      value={newProductForm.min_stock_alert}
-                      onChange={handleNewProductChange}
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-1">📍</span> Location
-                  </label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={newProductForm.location}
-                    onChange={handleNewProductChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. Shelf A, Bin 5"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-1">🎨</span> Color
-                  </label>
-                  <input
-                    type="text"
-                    name="color"
-                    value={newProductForm.color}
-                    onChange={handleNewProductChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter color (e.g. Black, White, Red)"
-                  />
-                </div>
-              </div>
-              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={closeNewProductModal}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Add Product
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      
-      {/* Cancel Job Modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-900">Cancel Job</h3>
-            </div>
-            <div className="p-6">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reason for Cancellation
-                </label>
-                <textarea
-                  value={cancellationReason}
-                  onChange={(e) => setCancellationReason(e.target.value)}
-                  rows="4"
-                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Enter reason for cancelling this job..."
-                  disabled={cancelling}
-                />
-              </div>
-              
-              <div className="text-sm text-gray-500 mb-6">
-                This job will be marked as cancelled and will no longer appear in active jobs.
-              </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowCancelModal(false);
-                    setCancellationReason('');
-                  }}
-                  disabled={cancelling}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={cancelJob}
-                  disabled={cancelling || !cancellationReason.trim()}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50"
-                >
-                  {cancelling ? 'Cancelling...' : 'Confirm Cancel'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      </div>
+    </div >
   );
 };
 

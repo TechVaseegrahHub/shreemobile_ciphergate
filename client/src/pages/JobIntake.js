@@ -24,17 +24,17 @@ const JobIntake = () => {
   }, [navigate]);
 
   const [formData, setFormData] = useState({
-    customerName: '', 
-    customerPhone: '', 
+    customerName: '',
+    customerPhone: '',
     customerEmail: '',
     customerAddress: '',
     aadharNumber: '',
     device_brand: '',
-    device_model: '', 
+    device_model: '',
     imei_number: '',
     serial_number: '',
     device_condition: '',
-    reported_issue: '', 
+    reported_issue: '',
     repair_type: 'hardware',
     urgency_level: 'normal',
     estimated_delivery_date: '',
@@ -55,14 +55,14 @@ const JobIntake = () => {
           api.get('/workers'),
           api.get('/jobs/next-bill-number')
         ]);
-        
+
         setWorkers(workersRes.data);
-        
+
         setFormData(prevData => ({
           ...prevData,
           job_card_number: nextBillRes.data.nextBillNumber
         }));
-        
+
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -73,7 +73,7 @@ const JobIntake = () => {
 
     fetchData();
   }, []);
-  
+
   // Customer photo capture state
   const [photo, setPhoto] = useState(null);
   // Device video capture state
@@ -88,28 +88,28 @@ const JobIntake = () => {
   const canvasRef = useRef(null);
   const recordingTimerRef = useRef(null);
 
- // UPDATED: Generate optimized detailed PDF for WhatsApp (with compression)
-const generatePDFForWhatsApp = async (jobCardNumber) => {
-  console.log('Generating OPTIMIZED detailed PDF for WhatsApp...');
-  
-  try {
-    const dateObj = new Date();
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const formattedDate = `${dateObj.getDate()}/${monthNames[dateObj.getMonth()]}/${dateObj.getFullYear()}`;
-    
-    const pdfContent = document.createElement('div');
-    pdfContent.style.width = '210mm';
-    pdfContent.style.minHeight = '297mm';
-    pdfContent.style.padding = '8mm'; // Reduced padding
-    pdfContent.style.backgroundColor = '#ffffff';
-    pdfContent.style.boxSizing = 'border-box';
-    pdfContent.style.position = 'absolute';
-    pdfContent.style.left = '-9999px';
-    pdfContent.style.top = '0';
-    pdfContent.style.fontFamily = "'Nirmala UI', 'Arial', sans-serif"; // Simplified font stack
-    
-    // OPTIMIZED HTML - removed unnecessary styling, compressed content
-    pdfContent.innerHTML = `
+  // UPDATED: Generate optimized detailed PDF for WhatsApp (with compression)
+  const generatePDFForWhatsApp = async (jobCardNumber) => {
+    console.log('Generating OPTIMIZED detailed PDF for WhatsApp...');
+
+    try {
+      const dateObj = new Date();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const formattedDate = `${dateObj.getDate()}/${monthNames[dateObj.getMonth()]}/${dateObj.getFullYear()}`;
+
+      const pdfContent = document.createElement('div');
+      pdfContent.style.width = '210mm';
+      pdfContent.style.minHeight = '297mm';
+      pdfContent.style.padding = '8mm'; // Reduced padding
+      pdfContent.style.backgroundColor = '#ffffff';
+      pdfContent.style.boxSizing = 'border-box';
+      pdfContent.style.position = 'absolute';
+      pdfContent.style.left = '-9999px';
+      pdfContent.style.top = '0';
+      pdfContent.style.fontFamily = "'Nirmala UI', 'Arial', sans-serif"; // Simplified font stack
+
+      // OPTIMIZED HTML - removed unnecessary styling, compressed content
+      pdfContent.innerHTML = `
       <div style="border: 1px solid #000; padding: 5px; height: 100%;">
         <!-- OPTIMIZED HEADER - Reduced font sizes -->
         <div style="text-align: center; margin-bottom: 3px; position: relative;">
@@ -286,82 +286,82 @@ const generatePDFForWhatsApp = async (jobCardNumber) => {
         </div>
       </div>
     `;
-    
-    document.body.appendChild(pdfContent);
-    
-    // Wait for content to render
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    console.log('Rendering OPTIMIZED PDF canvas...');
-    
-    // CRITICAL OPTIMIZATION: Use lower scale and JPEG compression
-    const canvas = await html2canvas(pdfContent, {
-      scale: 1.2, // Reduced from 1.8 to 1.2 (33% reduction)
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      imageTimeout: 3000,
-      removeContainer: false,
-      // Optimize rendering
-      allowTaint: true,
-      useCORS: true,
-      // Reduce quality for size
-      quality: 0.7 // Lower quality for smaller file
-    });
-    
-    console.log('Optimized canvas created:', canvas.width, 'x', canvas.height);
-    
-    // Use JPEG with lower quality for SIGNIFICANT size reduction
-    const imgData = canvas.toDataURL('image/jpeg', 0.6); // 0.6 quality (40% reduction)
-    
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    // Compress the image in PDF
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'FAST'); // FAST compression
-    
-    const pdfBlob = pdf.output('blob');
-    
-    document.body.removeChild(pdfContent);
-    
-    console.log('OPTIMIZED PDF generated for WhatsApp:', (pdfBlob.size / 1024).toFixed(2), 'KB');
-    
-    // Check if PDF is under 5MB
-    if (pdfBlob.size > 5 * 1024 * 1024) {
-      console.warn('⚠️ PDF still too large. Trying ultra-compression...');
-      
-      // If still too large, generate an even more compressed version
-      return await generateUltraCompressedPDF(jobCardNumber, formattedDate);
-    }
-    
-    return pdfBlob;
-  } catch (err) {
-    console.error('Error generating optimized PDF for WhatsApp:', err);
-    
-    // Fallback: Try to generate a simple text-based PDF
-    return await generateSimpleTextPDF(jobCardNumber);
-  }
-};
 
-// EXTREME COMPRESSION VERSION for when regular optimization isn't enough
-const generateUltraCompressedPDF = async (jobCardNumber, formattedDate) => {
-  console.log('Generating ULTRA-COMPRESSED PDF...');
-  
-  try {
-    const pdfContent = document.createElement('div');
-    pdfContent.style.width = '210mm';
-    pdfContent.style.minHeight = '297mm';
-    pdfContent.style.padding = '5mm';
-    pdfContent.style.backgroundColor = '#ffffff';
-    pdfContent.style.boxSizing = 'border-box';
-    pdfContent.style.position = 'absolute';
-    pdfContent.style.left = '-9999px';
-    pdfContent.style.top = '0';
-    pdfContent.style.fontFamily = "Arial, sans-serif"; // Simple fonts only
-    
-    // ULTRA-MINIMAL CONTENT - Only essential information
-    pdfContent.innerHTML = `
+      document.body.appendChild(pdfContent);
+
+      // Wait for content to render
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      console.log('Rendering OPTIMIZED PDF canvas...');
+
+      // CRITICAL OPTIMIZATION: Use lower scale and JPEG compression
+      const canvas = await html2canvas(pdfContent, {
+        scale: 1.2, // Reduced from 1.8 to 1.2 (33% reduction)
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        imageTimeout: 3000,
+        removeContainer: false,
+        // Optimize rendering
+        allowTaint: true,
+        useCORS: true,
+        // Reduce quality for size
+        quality: 0.7 // Lower quality for smaller file
+      });
+
+      console.log('Optimized canvas created:', canvas.width, 'x', canvas.height);
+
+      // Use JPEG with lower quality for SIGNIFICANT size reduction
+      const imgData = canvas.toDataURL('image/jpeg', 0.6); // 0.6 quality (40% reduction)
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Compress the image in PDF
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'FAST'); // FAST compression
+
+      const pdfBlob = pdf.output('blob');
+
+      document.body.removeChild(pdfContent);
+
+      console.log('OPTIMIZED PDF generated for WhatsApp:', (pdfBlob.size / 1024).toFixed(2), 'KB');
+
+      // Check if PDF is under 5MB
+      if (pdfBlob.size > 5 * 1024 * 1024) {
+        console.warn('⚠️ PDF still too large. Trying ultra-compression...');
+
+        // If still too large, generate an even more compressed version
+        return await generateUltraCompressedPDF(jobCardNumber, formattedDate);
+      }
+
+      return pdfBlob;
+    } catch (err) {
+      console.error('Error generating optimized PDF for WhatsApp:', err);
+
+      // Fallback: Try to generate a simple text-based PDF
+      return await generateSimpleTextPDF(jobCardNumber);
+    }
+  };
+
+  // EXTREME COMPRESSION VERSION for when regular optimization isn't enough
+  const generateUltraCompressedPDF = async (jobCardNumber, formattedDate) => {
+    console.log('Generating ULTRA-COMPRESSED PDF...');
+
+    try {
+      const pdfContent = document.createElement('div');
+      pdfContent.style.width = '210mm';
+      pdfContent.style.minHeight = '297mm';
+      pdfContent.style.padding = '5mm';
+      pdfContent.style.backgroundColor = '#ffffff';
+      pdfContent.style.boxSizing = 'border-box';
+      pdfContent.style.position = 'absolute';
+      pdfContent.style.left = '-9999px';
+      pdfContent.style.top = '0';
+      pdfContent.style.fontFamily = "Arial, sans-serif"; // Simple fonts only
+
+      // ULTRA-MINIMAL CONTENT - Only essential information
+      pdfContent.innerHTML = `
       <div style="border: 1px solid #000; padding: 3px; height: 100%;">
         <!-- MINIMAL HEADER -->
         <div style="text-align: center; margin-bottom: 2px;">
@@ -424,114 +424,114 @@ const generateUltraCompressedPDF = async (jobCardNumber, formattedDate) => {
         </div>
       </div>
     `;
-    
-    document.body.appendChild(pdfContent);
-    
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    console.log('Rendering ultra-compressed canvas...');
-    
-    const canvas = await html2canvas(pdfContent, {
-      scale: 1.0, // Minimum scale
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      quality: 0.5, // Very low quality
-      imageTimeout: 2000
-    });
-    
-    // Use JPEG with very low quality
-    const imgData = canvas.toDataURL('image/jpeg', 0.4);
-    
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'FAST');
-    
-    const pdfBlob = pdf.output('blob');
-    
-    document.body.removeChild(pdfContent);
-    
-    console.log('ULTRA-COMPRESSED PDF generated:', (pdfBlob.size / 1024).toFixed(2), 'KB');
-    
-    return pdfBlob;
-  } catch (err) {
-    console.error('Error generating ultra-compressed PDF:', err);
-    return null;
-  }
-};
 
-// SIMPLE TEXT-ONLY FALLBACK
-const generateSimpleTextPDF = async (jobCardNumber) => {
-  console.log('Generating SIMPLE TEXT PDF as fallback...');
-  
-  try {
-    const dateObj = new Date();
-    const formattedDate = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
-    
-    const pdf = new jsPDF();
-    
-    // Add text directly to PDF (no images = very small file)
-    pdf.setFontSize(16);
-    pdf.text('Sri Ramanar Mobile Service', 105, 20, { align: 'center' });
-    
-    pdf.setFontSize(10);
-    pdf.text('Tiruvannamalai - 606601 | 94430 19097', 105, 30, { align: 'center' });
-    
-    pdf.setFontSize(12);
-    pdf.text(`Bill No: ${jobCardNumber}`, 20, 45);
-    pdf.text(`Date: ${formattedDate}`, 150, 45);
-    
-    pdf.line(20, 50, 190, 50);
-    
-    pdf.setFontSize(11);
-    pdf.text(`Customer: ${formData.customerName.toUpperCase()}`, 20, 60);
-    pdf.text(`Phone: ${formData.customerPhone}`, 20, 70);
-    
-    pdf.text(`Device: ${formData.device_brand ? formData.device_brand + ' ' : ''}${formData.device_model}`, 20, 85);
-    pdf.text(`Issue: ${formData.reported_issue}`, 20, 95);
-    
-    pdf.setFontSize(12);
-    pdf.text(`Total Amount: ₹${(formData.total_amount === '' ? 0 : parseFloat(formData.total_amount)).toFixed(2)}`, 20, 115);
-    pdf.text(`Advance: ₹${(formData.advance_payment === '' ? 0 : parseFloat(formData.advance_payment)).toFixed(2)}`, 20, 125);
-    pdf.text(`Balance: ₹${((formData.total_amount === '' ? 0 : parseFloat(formData.total_amount)) - (formData.advance_payment === '' ? 0 : parseFloat(formData.advance_payment))).toFixed(2)}`, 20, 135);
-    
-    pdf.setFontSize(10);
-    pdf.text('Thank you for choosing our service!', 105, 180, { align: 'center' });
-    pdf.text('*Computer Generated Receipt*', 105, 190, { align: 'center' });
-    
-    const pdfBlob = pdf.output('blob');
-    console.log('Simple text PDF generated:', (pdfBlob.size / 1024).toFixed(2), 'KB');
-    
-    return pdfBlob;
-  } catch (err) {
-    console.error('Error generating simple text PDF:', err);
-    return null;
-  }
-};
+      document.body.appendChild(pdfContent);
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      console.log('Rendering ultra-compressed canvas...');
+
+      const canvas = await html2canvas(pdfContent, {
+        scale: 1.0, // Minimum scale
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        quality: 0.5, // Very low quality
+        imageTimeout: 2000
+      });
+
+      // Use JPEG with very low quality
+      const imgData = canvas.toDataURL('image/jpeg', 0.4);
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'FAST');
+
+      const pdfBlob = pdf.output('blob');
+
+      document.body.removeChild(pdfContent);
+
+      console.log('ULTRA-COMPRESSED PDF generated:', (pdfBlob.size / 1024).toFixed(2), 'KB');
+
+      return pdfBlob;
+    } catch (err) {
+      console.error('Error generating ultra-compressed PDF:', err);
+      return null;
+    }
+  };
+
+  // SIMPLE TEXT-ONLY FALLBACK
+  const generateSimpleTextPDF = async (jobCardNumber) => {
+    console.log('Generating SIMPLE TEXT PDF as fallback...');
+
+    try {
+      const dateObj = new Date();
+      const formattedDate = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+
+      const pdf = new jsPDF();
+
+      // Add text directly to PDF (no images = very small file)
+      pdf.setFontSize(16);
+      pdf.text('Sri Ramanar Mobile Service', 105, 20, { align: 'center' });
+
+      pdf.setFontSize(10);
+      pdf.text('Tiruvannamalai - 606601 | 94430 19097', 105, 30, { align: 'center' });
+
+      pdf.setFontSize(12);
+      pdf.text(`Bill No: ${jobCardNumber}`, 20, 45);
+      pdf.text(`Date: ${formattedDate}`, 150, 45);
+
+      pdf.line(20, 50, 190, 50);
+
+      pdf.setFontSize(11);
+      pdf.text(`Customer: ${formData.customerName.toUpperCase()}`, 20, 60);
+      pdf.text(`Phone: ${formData.customerPhone}`, 20, 70);
+
+      pdf.text(`Device: ${formData.device_brand ? formData.device_brand + ' ' : ''}${formData.device_model}`, 20, 85);
+      pdf.text(`Issue: ${formData.reported_issue}`, 20, 95);
+
+      pdf.setFontSize(12);
+      pdf.text(`Total Amount: ₹${(formData.total_amount === '' ? 0 : parseFloat(formData.total_amount)).toFixed(2)}`, 20, 115);
+      pdf.text(`Advance: ₹${(formData.advance_payment === '' ? 0 : parseFloat(formData.advance_payment)).toFixed(2)}`, 20, 125);
+      pdf.text(`Balance: ₹${((formData.total_amount === '' ? 0 : parseFloat(formData.total_amount)) - (formData.advance_payment === '' ? 0 : parseFloat(formData.advance_payment))).toFixed(2)}`, 20, 135);
+
+      pdf.setFontSize(10);
+      pdf.text('Thank you for choosing our service!', 105, 180, { align: 'center' });
+      pdf.text('*Computer Generated Receipt*', 105, 190, { align: 'center' });
+
+      const pdfBlob = pdf.output('blob');
+      console.log('Simple text PDF generated:', (pdfBlob.size / 1024).toFixed(2), 'KB');
+
+      return pdfBlob;
+    } catch (err) {
+      console.error('Error generating simple text PDF:', err);
+      return null;
+    }
+  };
 
   // Function to generate and download PDF (full quality for local)
-const generateAndDownloadPDF = async (jobData) => {
-  console.log('Generating local PDF for download...');
-  
-  try {
-    const dateObj = new Date();
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const formattedDate = `${dateObj.getDate()}/${monthNames[dateObj.getMonth()]}/${dateObj.getFullYear()}`;
-    
-    const pdfContent = document.createElement('div');
-    pdfContent.style.width = '210mm';
-    pdfContent.style.minHeight = '297mm';
-    pdfContent.style.padding = '10mm';
-    pdfContent.style.backgroundColor = '#ffffff';
-    pdfContent.style.boxSizing = 'border-box';
-    pdfContent.style.position = 'absolute';
-    pdfContent.style.left = '-9999px';
-    pdfContent.style.fontFamily = "'Nirmala UI', 'Arial Unicode MS', 'Arial', sans-serif"; 
-    
-    // Use the SAME detailed content for consistency
-    pdfContent.innerHTML = `
+  const generateAndDownloadPDF = async (jobData) => {
+    console.log('Generating local PDF for download...');
+
+    try {
+      const dateObj = new Date();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const formattedDate = `${dateObj.getDate()}/${monthNames[dateObj.getMonth()]}/${dateObj.getFullYear()}`;
+
+      const pdfContent = document.createElement('div');
+      pdfContent.style.width = '210mm';
+      pdfContent.style.minHeight = '297mm';
+      pdfContent.style.padding = '10mm';
+      pdfContent.style.backgroundColor = '#ffffff';
+      pdfContent.style.boxSizing = 'border-box';
+      pdfContent.style.position = 'absolute';
+      pdfContent.style.left = '-9999px';
+      pdfContent.style.fontFamily = "'Nirmala UI', 'Arial Unicode MS', 'Arial', sans-serif";
+
+      // Use the SAME detailed content for consistency
+      pdfContent.innerHTML = `
       <div style="border: 1px solid #000; padding: 10px; height: 100%; position: relative;">
         <div style="text-align: center; margin-bottom: 5px; position: relative;">
           <div style="position: absolute; top: 0; left: 10px;">
@@ -710,39 +710,39 @@ const generateAndDownloadPDF = async (jobData) => {
         </div>
       </div>
     `;
-    
-    document.body.appendChild(pdfContent);
-    
-    const canvas = await html2canvas(pdfContent, {
-      scale: 2, // Higher scale for better download quality
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff'
-    });
-    
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    
-    const filename = `Bill_${jobData.job_card_number || jobData._id}_${formData.customerName}.pdf`;
-    pdf.save(filename);
-    
-    document.body.removeChild(pdfContent);
-    
-    console.log('Local PDF downloaded:', filename);
-  } catch (err) {
-    console.error('Error generating local PDF:', err);
-    throw err;
-  }
-};
+
+      document.body.appendChild(pdfContent);
+
+      const canvas = await html2canvas(pdfContent, {
+        scale: 2, // Higher scale for better download quality
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      const filename = `Bill_${jobData.job_card_number || jobData._id}_${formData.customerName}.pdf`;
+      pdf.save(filename);
+
+      document.body.removeChild(pdfContent);
+
+      console.log('Local PDF downloaded:', filename);
+    } catch (err) {
+      console.error('Error generating local PDF:', err);
+      throw err;
+    }
+  };
 
   // Helper function to convert video blob URL to actual blob
   const getVideoBlob = async (videoBlobUrl) => {
     if (!videoBlobUrl) return null;
-    
+
     try {
       const response = await fetch(videoBlobUrl);
       const blob = await response.blob();
@@ -757,17 +757,17 @@ const generateAndDownloadPDF = async (jobData) => {
   // Function to reset form after successful submission
   const resetForm = async () => {
     setFormData({
-      customerName: '', 
-      customerPhone: '', 
+      customerName: '',
+      customerPhone: '',
       customerEmail: '',
       customerAddress: '',
       aadharNumber: '',
       device_brand: '',
-      device_model: '', 
+      device_model: '',
       imei_number: '',
       serial_number: '',
       device_condition: '',
-      reported_issue: '', 
+      reported_issue: '',
       repair_type: 'hardware',
       urgency_level: 'normal',
       estimated_delivery_date: '',
@@ -779,10 +779,10 @@ const generateAndDownloadPDF = async (jobData) => {
       taken_by_worker_id: '',
       job_card_number: ''
     });
-    
+
     setPhoto(null);
     setDeviceVideo(null);
-    
+
     try {
       const nextBillRes = await api.get('/jobs/next-bill-number');
       setFormData(prevData => ({
@@ -797,41 +797,42 @@ const generateAndDownloadPDF = async (jobData) => {
   // FIXED: handleSubmit with proper PDF sending
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     setIsProcessing(true);
     setError('');
     setSuccess('');
     setProcessingStatus('Creating job...');
-    
+
     const startTime = Date.now();
-    
+
     try {
       // Prepare data for submission
+      const intakeAmount = formData.total_amount === '' ? 0 : parseFloat(formData.total_amount);
       const submitData = {
         ...formData,
-        service_charges: formData.service_charges === '' ? 0 : parseFloat(formData.service_charges),
+        service_charges: intakeAmount, // Set service_charges to the total_amount entered at intake
         parts_cost: formData.parts_cost === '' ? 0 : parseFloat(formData.parts_cost),
         advance_payment: formData.advance_payment === '' ? 0 : parseFloat(formData.advance_payment),
-        total_amount: formData.total_amount === '' ? 0 : parseFloat(formData.total_amount),
+        total_amount: intakeAmount,
         customer_photo: photo,
         device_video: deviceVideo
       };
-      
+
       console.log('='.repeat(50));
       console.log('STEP 1: Creating job...');
-      
+
       // 1. Create job
       const response = await api.post('/jobs', submitData);
       const jobId = response.data.job._id;
       const jobCardNumber = formData.job_card_number;
-      
+
       console.log('Job created:', jobId, `(${Date.now() - startTime}ms)`);
       setProcessingStatus('Job created. Generating PDF...');
-      
+
       // 2. Generate PDF for WhatsApp FIRST (before download)
       console.log('STEP 2: Generating PDF for WhatsApp...');
       let pdfBlob = null;
-      
+
       try {
         pdfBlob = await generatePDFForWhatsApp(jobCardNumber);
         if (pdfBlob) {
@@ -842,150 +843,150 @@ const generateAndDownloadPDF = async (jobData) => {
       } catch (pdfError) {
         console.error('PDF generation error:', pdfError);
       }
-      
+
       // 3. Download local PDF (parallel with WhatsApp)
       console.log('STEP 3: Starting parallel operations...');
       setProcessingStatus('Downloading PDF & sending WhatsApp...');
-      
+
       // Start PDF download (don't wait)
-      const downloadPromise = generateAndDownloadPDF({ 
+      const downloadPromise = generateAndDownloadPDF({
         job_card_number: jobCardNumber,
-        _id: jobId 
+        _id: jobId
       }).then(() => {
         console.log('Local PDF downloaded', `(${Date.now() - startTime}ms)`);
       }).catch(err => {
         console.error('PDF download error:', err);
       });
-      
+
       // In handleSubmit function, around line 670-690:
 
-// 4. Get video blob if exists
-let videoBlobData = null;
-if (deviceVideo) {
-  console.log('Getting video blob...');
-  videoBlobData = await getVideoBlob(deviceVideo);
-  console.log('Video blob size:', videoBlobData ? `${(videoBlobData.size / 1024 / 1024).toFixed(2)}MB` : 'null');
-}
+      // 4. Get video blob if exists
+      let videoBlobData = null;
+      if (deviceVideo) {
+        console.log('Getting video blob...');
+        videoBlobData = await getVideoBlob(deviceVideo);
+        console.log('Video blob size:', videoBlobData ? `${(videoBlobData.size / 1024 / 1024).toFixed(2)}MB` : 'null');
+      }
 
-// In handleSubmit function:
-console.log('STEP 4: Sending WhatsApp template with PDF...');
-console.log('PDF status:', pdfBlob ? `${(pdfBlob.size / 1024).toFixed(2)}KB` : 'None');
+      // In handleSubmit function:
+      console.log('STEP 4: Sending WhatsApp template with PDF...');
+      console.log('PDF status:', pdfBlob ? `${(pdfBlob.size / 1024).toFixed(2)}KB` : 'None');
 
-let whatsappResult = { success: false, message: 'Not attempted' };
+      let whatsappResult = { success: false, message: 'Not attempted' };
 
-try {
-  // ALWAYS try to send with PDF first
-  if (pdfBlob) {
-    console.log('Calling sendJobIntakeWithMedia for template document...');
-    whatsappResult = await WhatsAppService.sendJobIntakeWithMedia(
-      jobId,
-      pdfBlob // Send only PDF
-    );
-  } else {
-    console.log('No PDF available, falling back to simple notification...');
-    whatsappResult = await WhatsAppService.sendJobIntakeNotification(jobId);
-  }
-  console.log('WhatsApp result:', whatsappResult);
-} catch (whatsappError) {
-  console.error('WhatsApp error:', whatsappError);
-  whatsappResult = {
-    success: false,
-    message: whatsappError.message || 'WhatsApp notification failed'
-  };
-}
+      try {
+        // ALWAYS try to send with PDF first
+        if (pdfBlob) {
+          console.log('Calling sendJobIntakeWithMedia for template document...');
+          whatsappResult = await WhatsAppService.sendJobIntakeWithMedia(
+            jobId,
+            pdfBlob // Send only PDF
+          );
+        } else {
+          console.log('No PDF available, falling back to simple notification...');
+          whatsappResult = await WhatsAppService.sendJobIntakeNotification(jobId);
+        }
+        console.log('WhatsApp result:', whatsappResult);
+      } catch (whatsappError) {
+        console.error('WhatsApp error:', whatsappError);
+        whatsappResult = {
+          success: false,
+          message: whatsappError.message || 'WhatsApp notification failed'
+        };
+      }
 
-// ✅✅✅ MISSING CODE - ADD THIS!
-// STEP 5: Send device video separately
-let videoResult = null;
-if (videoBlobData && formData.customerPhone) {
-  console.log('🎬 STEP 5: Calling sendDeviceVideo API...');
-  console.log(`Phone: ${formData.customerPhone}, Video size: ${(videoBlobData.size / 1024 / 1024).toFixed(2)}MB`);
-  
-  setProcessingStatus('Sending device video...');
-  
-  try {
-    // THIS IS THE MISSING API CALL!
-    videoResult = await WhatsAppService.sendDeviceVideo(
-      jobId,
-      formData.customerPhone,
-      videoBlobData
-    );
-    
-    console.log('Device video API response:', videoResult);
-    
-    if (videoResult?.success) {
-      console.log('✅ Device video sent successfully');
-    } else {
-      console.warn('⚠️ Device video sending failed:', videoResult?.message);
-    }
-  } catch (videoError) {
-    console.error('❌ Error sending device video:', videoError);
-    videoResult = {
-      success: false,
-      message: videoError.message || 'Video sending failed'
-    };
-  }
-} else {
-  console.log('📹 No device video to send:', {
-    hasVideo: !!videoBlobData,
-    hasPhone: !!formData.customerPhone,
-    videoSize: videoBlobData?.size
-  });
-}
+      // ✅✅✅ MISSING CODE - ADD THIS!
+      // STEP 5: Send device video separately
+      let videoResult = null;
+      if (videoBlobData && formData.customerPhone) {
+        console.log('🎬 STEP 5: Calling sendDeviceVideo API...');
+        console.log(`Phone: ${formData.customerPhone}, Video size: ${(videoBlobData.size / 1024 / 1024).toFixed(2)}MB`);
 
-// Wait for PDF download to complete
-await downloadPromise;
+        setProcessingStatus('Sending device video...');
 
-// 6. Set success message
-const totalTime = Date.now() - startTime;
-console.log('='.repeat(50));
-console.log(`COMPLETED in ${totalTime}ms`);
-console.log('='.repeat(50));
+        try {
+          // THIS IS THE MISSING API CALL!
+          videoResult = await WhatsAppService.sendDeviceVideo(
+            jobId,
+            formData.customerPhone,
+            videoBlobData
+          );
 
-let successMessage = `✅ Job #${jobCardNumber} created! PDF downloaded.`;
+          console.log('Device video API response:', videoResult);
 
-if (whatsappResult?.success) {
-  const mediaStatus = [];
-  if (whatsappResult.results?.pdf?.sent) mediaStatus.push('PDF');
-  if (whatsappResult.results?.photo?.sent) mediaStatus.push('Photo');
-  
-  if (mediaStatus.length > 0) {
-    successMessage += ` WhatsApp sent with: ${mediaStatus.join(', ')} ✓`;
-  } else if (whatsappResult.results?.template?.sent) {
-    successMessage += ' WhatsApp template sent ✓';
-  }
-} else if (whatsappResult?.results?.template?.sent) {
-  successMessage += ' WhatsApp template sent ✓';
-  
-  // Show which media failed
-  const failed = [];
-  if (whatsappResult.results?.pdf?.error) failed.push('PDF');
-  if (whatsappResult.results?.photo?.error) failed.push('Photo');
-  
-  if (failed.length > 0) {
-    successMessage += ` (${failed.join(', ')} failed)`;
-  }
-} else {
-  successMessage += ` (WhatsApp: ${whatsappResult?.message || 'failed'})`;
-}
+          if (videoResult?.success) {
+            console.log('✅ Device video sent successfully');
+          } else {
+            console.warn('⚠️ Device video sending failed:', videoResult?.message);
+          }
+        } catch (videoError) {
+          console.error('❌ Error sending device video:', videoError);
+          videoResult = {
+            success: false,
+            message: videoError.message || 'Video sending failed'
+          };
+        }
+      } else {
+        console.log('📹 No device video to send:', {
+          hasVideo: !!videoBlobData,
+          hasPhone: !!formData.customerPhone,
+          videoSize: videoBlobData?.size
+        });
+      }
 
-// ✅ Add video status to success message
-if (videoResult) {
-  if (videoResult.success) {
-    successMessage += ' Video sent ✓';
-  } else {
-    successMessage += ` (Video: ${videoResult.message || 'failed'})`;
-  }
-}
+      // Wait for PDF download to complete
+      await downloadPromise;
 
-successMessage += ` [${(totalTime / 1000).toFixed(1)}s]`;
+      // 6. Set success message
+      const totalTime = Date.now() - startTime;
+      console.log('='.repeat(50));
+      console.log(`COMPLETED in ${totalTime}ms`);
+      console.log('='.repeat(50));
+
+      let successMessage = `✅ Job #${jobCardNumber} created! PDF downloaded.`;
+
+      if (whatsappResult?.success) {
+        const mediaStatus = [];
+        if (whatsappResult.results?.pdf?.sent) mediaStatus.push('PDF');
+        if (whatsappResult.results?.photo?.sent) mediaStatus.push('Photo');
+
+        if (mediaStatus.length > 0) {
+          successMessage += ` WhatsApp sent with: ${mediaStatus.join(', ')} ✓`;
+        } else if (whatsappResult.results?.template?.sent) {
+          successMessage += ' WhatsApp template sent ✓';
+        }
+      } else if (whatsappResult?.results?.template?.sent) {
+        successMessage += ' WhatsApp template sent ✓';
+
+        // Show which media failed
+        const failed = [];
+        if (whatsappResult.results?.pdf?.error) failed.push('PDF');
+        if (whatsappResult.results?.photo?.error) failed.push('Photo');
+
+        if (failed.length > 0) {
+          successMessage += ` (${failed.join(', ')} failed)`;
+        }
+      } else {
+        successMessage += ` (WhatsApp: ${whatsappResult?.message || 'failed'})`;
+      }
+
+      // ✅ Add video status to success message
+      if (videoResult) {
+        if (videoResult.success) {
+          successMessage += ' Video sent ✓';
+        } else {
+          successMessage += ` (Video: ${videoResult.message || 'failed'})`;
+        }
+      }
+
+      successMessage += ` [${(totalTime / 1000).toFixed(1)}s]`;
 
       setSuccess(successMessage);
       setProcessingStatus('');
-      
+
       // 7. Reset form
       await resetForm();
-      
+
     } catch (err) {
       console.error('Job creation error:', err);
       setError(err.response?.data?.error || err.message || 'Failed to create job. Please try again.');
@@ -1001,7 +1002,7 @@ successMessage += ` [${(totalTime / 1000).toFixed(1)}s]`;
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: cameraFacingMode }
       });
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -1010,27 +1011,27 @@ successMessage += ` [${(totalTime / 1000).toFixed(1)}s]`;
       setError('Could not access camera. Please ensure you have given permission.');
     }
   }, [cameraFacingMode]);
-  
+
   // Capture customer photo from camera
   const captureCustomerPhoto = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
+
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+
       // Use JPEG with good quality
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
       console.log('Photo captured, size:', (dataUrl.length / 1024).toFixed(2), 'KB');
-      
+
       setPhoto(dataUrl);
       setShowCamera(false);
       setCameraMode('photo');
-      
+
       if (video.srcObject) {
         const tracks = video.srcObject.getTracks();
         tracks.forEach(track => track.stop());
@@ -1040,76 +1041,76 @@ successMessage += ` [${(totalTime / 1000).toFixed(1)}s]`;
 
   // Update startDeviceVideoRecording function in your React component:
 
-const startDeviceVideoRecording = async () => {
-  if (videoRef.current && videoRef.current.srcObject) {
-    try {
-      const mediaStream = videoRef.current.srcObject;
-      
-      // ✅ Lower quality for better WhatsApp compatibility
-      const options = {
-        mimeType: 'video/webm;codecs=vp8',
-        videoBitsPerSecond: 1000000, // 1 Mbps for smaller file
-        audioBitsPerSecond: 64000    // 64 Kbps for audio
-      };
-      
-      // Try different mimeTypes if needed
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        options.mimeType = 'video/mp4';
-      }
-      
-      const recorder = new MediaRecorder(mediaStream, options);
-      const chunks = [];
-      
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunks.push(event.data);
+  const startDeviceVideoRecording = async () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      try {
+        const mediaStream = videoRef.current.srcObject;
+
+        // ✅ Lower quality for better WhatsApp compatibility
+        const options = {
+          mimeType: 'video/webm;codecs=vp8',
+          videoBitsPerSecond: 1000000, // 1 Mbps for smaller file
+          audioBitsPerSecond: 64000    // 64 Kbps for audio
+        };
+
+        // Try different mimeTypes if needed
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options.mimeType = 'video/mp4';
         }
-      };
-      
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: options.mimeType });
-        const videoUrl = URL.createObjectURL(blob);
-        console.log('Video recorded, size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
-        setDeviceVideo(videoUrl);
-        
-        // Cleanup
-        if (recordingTimerRef.current) {
-          clearInterval(recordingTimerRef.current);
-          recordingTimerRef.current = null;
-        }
-        setRecordingTime(0);
-      };
-      
-      // Limit recording to 15 seconds max
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
-      
-      setRecordingTime(0);
-      recordingTimerRef.current = setInterval(() => {
-        setRecordingTime(prev => {
-          // Auto-stop at 15 seconds
-          if (prev >= 15) {
-            stopDeviceVideoRecording();
-            return prev;
+
+        const recorder = new MediaRecorder(mediaStream, options);
+        const chunks = [];
+
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunks.push(event.data);
           }
-          return prev + 1;
-        });
-      }, 1000);
-      
-    } catch (err) {
-      console.error('Error starting recording:', err);
-      setError('Could not start recording. Please try again.');
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: options.mimeType });
+          const videoUrl = URL.createObjectURL(blob);
+          console.log('Video recorded, size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
+          setDeviceVideo(videoUrl);
+
+          // Cleanup
+          if (recordingTimerRef.current) {
+            clearInterval(recordingTimerRef.current);
+            recordingTimerRef.current = null;
+          }
+          setRecordingTime(0);
+        };
+
+        // Limit recording to 15 seconds max
+        recorder.start();
+        setMediaRecorder(recorder);
+        setIsRecording(true);
+
+        setRecordingTime(0);
+        recordingTimerRef.current = setInterval(() => {
+          setRecordingTime(prev => {
+            // Auto-stop at 15 seconds
+            if (prev >= 15) {
+              stopDeviceVideoRecording();
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 1000);
+
+      } catch (err) {
+        console.error('Error starting recording:', err);
+        setError('Could not start recording. Please try again.');
+      }
     }
-  }
-};
-  
+  };
+
   // Stop device video recording
   const stopDeviceVideoRecording = () => {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
       setIsRecording(false);
-      
+
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
         recordingTimerRef.current = null;
@@ -1117,34 +1118,34 @@ const startDeviceVideoRecording = async () => {
       setRecordingTime(0);
     }
   };
-  
+
   // Switch camera (front/back)
   const switchCamera = () => {
     setCameraFacingMode(prevMode => prevMode === 'user' ? 'environment' : 'user');
   };
-  
+
   // Remove customer photo
   const removeCustomerPhoto = () => {
     setPhoto(null);
   };
-  
+
   // Remove device video
   const removeDeviceVideo = () => {
     setDeviceVideo(null);
   };
-  
+
   // Open camera for customer photo
   const openCustomerPhotoCamera = () => {
     setCameraMode('photo');
     setShowCamera(true);
   };
-  
+
   // Open camera for device video
   const openDeviceVideoCamera = () => {
     setCameraMode('video');
     setShowCamera(true);
   };
-  
+
   // Close camera
   const closeCamera = () => {
     if (isRecording) {
@@ -1161,12 +1162,12 @@ const startDeviceVideoRecording = async () => {
     }
     setRecordingTime(0);
   };
-  
+
   // Handle camera cancel
   const handleCameraCancel = () => {
     closeCamera();
   };
-  
+
   // Effect to reinitialize camera when facing mode changes
   useEffect(() => {
     if (showCamera) {
@@ -1174,7 +1175,7 @@ const startDeviceVideoRecording = async () => {
         const tracks = videoRef.current.srcObject.getTracks();
         tracks.forEach(track => track.stop());
       }
-      
+
       initCamera();
     }
   }, [cameraFacingMode, showCamera, initCamera]);
@@ -1212,7 +1213,7 @@ const startDeviceVideoRecording = async () => {
           }
         `}
       </style>
-      
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">New Job Intake</h1>
         <p className="text-gray-600">Create a new repair job</p>
@@ -1256,7 +1257,7 @@ const startDeviceVideoRecording = async () => {
                   type="text"
                   id="customerName"
                   value={formData.customerName}
-                  onChange={(e) => setFormData({...formData, customerName: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required
                 />
@@ -1269,7 +1270,7 @@ const startDeviceVideoRecording = async () => {
                   type="tel"
                   id="customerPhone"
                   value={formData.customerPhone}
-                  onChange={(e) => setFormData({...formData, customerPhone: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required
                 />
@@ -1282,7 +1283,7 @@ const startDeviceVideoRecording = async () => {
                   type="email"
                   id="customerEmail"
                   value={formData.customerEmail}
-                  onChange={(e) => setFormData({...formData, customerEmail: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
               </div>
@@ -1294,12 +1295,12 @@ const startDeviceVideoRecording = async () => {
                   type="text"
                   id="customerAddress"
                   value={formData.customerAddress}
-                  onChange={(e) => setFormData({...formData, customerAddress: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, customerAddress: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="e.g. T.V.MALAI"
                 />
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="aadharNumber">
                   Aadhar Number
@@ -1310,7 +1311,7 @@ const startDeviceVideoRecording = async () => {
                   value={formData.aadharNumber}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 12);
-                    setFormData({...formData, aadharNumber: value});
+                    setFormData({ ...formData, aadharNumber: value });
                   }}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="12-digit Aadhar number"
@@ -1319,18 +1320,18 @@ const startDeviceVideoRecording = async () => {
                   <p className="text-red-500 text-xs italic mt-1">Aadhar number must be 12 digits</p>
                 )}
               </div>
-              
+
               {/* Customer Photo Capture Section */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
                   Customer Photo
                 </label>
-                
+
                 {photo ? (
                   <div className="flex items-center space-x-4">
-                    <img 
-                      src={photo} 
-                      alt="Customer" 
+                    <img
+                      src={photo}
+                      alt="Customer"
                       className="w-24 h-24 object-cover rounded border"
                     />
                     <div className="flex space-x-2">
@@ -1353,17 +1354,17 @@ const startDeviceVideoRecording = async () => {
                   </button>
                 )}
               </div>
-              
+
               {/* Device Video Capture Section */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
                   Device Video
                 </label>
-                
+
                 {deviceVideo ? (
                   <div className="flex items-center space-x-4">
-                    <video 
-                      src={deviceVideo} 
+                    <video
+                      src={deviceVideo}
                       className="w-24 h-24 object-cover rounded border"
                       controls
                     />
@@ -1387,7 +1388,7 @@ const startDeviceVideoRecording = async () => {
                   </button>
                 )}
               </div>
-              
+
               {/* Camera Modal */}
               {showCamera && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1397,7 +1398,7 @@ const startDeviceVideoRecording = async () => {
                     </div>
                     <div className="p-4">
                       <div className="relative mb-4">
-                        <video 
+                        <video
                           ref={videoRef}
                           autoPlay
                           playsInline
@@ -1472,7 +1473,7 @@ const startDeviceVideoRecording = async () => {
                   type="text"
                   id="device_brand"
                   value={formData.device_brand}
-                  onChange={(e) => setFormData({...formData, device_brand: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, device_brand: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="e.g. 1+"
                 />
@@ -1485,7 +1486,7 @@ const startDeviceVideoRecording = async () => {
                   type="text"
                   id="device_model"
                   value={formData.device_model}
-                  onChange={(e) => setFormData({...formData, device_model: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, device_model: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required
                   placeholder="e.g. NORD CE2"
@@ -1499,7 +1500,7 @@ const startDeviceVideoRecording = async () => {
                   type="text"
                   id="imei_number"
                   value={formData.imei_number}
-                  onChange={(e) => setFormData({...formData, imei_number: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, imei_number: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
               </div>
@@ -1511,7 +1512,7 @@ const startDeviceVideoRecording = async () => {
                   type="text"
                   id="serial_number"
                   value={formData.serial_number}
-                  onChange={(e) => setFormData({...formData, serial_number: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
               </div>
@@ -1522,7 +1523,7 @@ const startDeviceVideoRecording = async () => {
                 <textarea
                   id="device_condition"
                   value={formData.device_condition}
-                  onChange={(e) => setFormData({...formData, device_condition: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, device_condition: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   rows="2"
                   placeholder="Cosmetic damage, screen cracks, etc."
@@ -1541,7 +1542,7 @@ const startDeviceVideoRecording = async () => {
                 <textarea
                   id="reported_issue"
                   value={formData.reported_issue}
-                  onChange={(e) => setFormData({...formData, reported_issue: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, reported_issue: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   rows="3"
                   required
@@ -1555,7 +1556,7 @@ const startDeviceVideoRecording = async () => {
                 <select
                   id="repair_type"
                   value={formData.repair_type}
-                  onChange={(e) => setFormData({...formData, repair_type: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, repair_type: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="hardware">Hardware</option>
@@ -1570,7 +1571,7 @@ const startDeviceVideoRecording = async () => {
                 <select
                   id="urgency_level"
                   value={formData.urgency_level}
-                  onChange={(e) => setFormData({...formData, urgency_level: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, urgency_level: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="normal">Normal</option>
@@ -1586,7 +1587,7 @@ const startDeviceVideoRecording = async () => {
                   type="date"
                   id="estimated_delivery_date"
                   value={formData.estimated_delivery_date}
-                  onChange={(e) => setFormData({...formData, estimated_delivery_date: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, estimated_delivery_date: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
               </div>
@@ -1596,13 +1597,13 @@ const startDeviceVideoRecording = async () => {
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Financial Details</h2>
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="total_amount">
-                  Total Amount (Rs) *
+                  Service Charge / Total (Rs) *
                 </label>
                 <input
                   type="number"
                   id="total_amount"
                   value={formData.total_amount}
-                  onChange={(e) => setFormData({...formData, total_amount: e.target.value === '' ? '' : parseFloat(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, total_amount: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline hide-spinners"
                   min="0"
                   step="0.01"
@@ -1617,7 +1618,7 @@ const startDeviceVideoRecording = async () => {
                   type="number"
                   id="advance_payment"
                   value={formData.advance_payment}
-                  onChange={(e) => setFormData({...formData, advance_payment: e.target.value === '' ? '' : parseFloat(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, advance_payment: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline hide-spinners"
                   min="0"
                   step="0.01"
@@ -1631,7 +1632,7 @@ const startDeviceVideoRecording = async () => {
                 <select
                   id="payment_method"
                   value={formData.payment_method}
-                  onChange={(e) => setFormData({...formData, payment_method: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="cash">Cash</option>
@@ -1650,7 +1651,7 @@ const startDeviceVideoRecording = async () => {
             <select
               id="taken_by_worker_id"
               value={formData.taken_by_worker_id}
-              onChange={(e) => setFormData({...formData, taken_by_worker_id: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, taken_by_worker_id: e.target.value })}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             >
               <option value="">Select Worker (Optional)</option>
@@ -1668,7 +1669,7 @@ const startDeviceVideoRecording = async () => {
               type="text"
               id="job_card_number"
               value={formData.job_card_number}
-              onChange={(e) => setFormData({...formData, job_card_number: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, job_card_number: e.target.value })}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
