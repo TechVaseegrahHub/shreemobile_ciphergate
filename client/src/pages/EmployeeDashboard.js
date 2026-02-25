@@ -14,18 +14,18 @@ const EmployeeDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   // Face recognition states
   const [showFaceModal, setShowFaceModal] = useState(false);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [faceProcessing, setFaceProcessing] = useState(false);
-  
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
   const [faceError, setFaceError] = useState('');
   const [faceSuccess, setFaceSuccess] = useState('');
-  
+
   // Refs for face recognition
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -37,7 +37,7 @@ const EmployeeDashboard = () => {
       const res = await axios.get(`/api/workers/${id}`);
       const freshWorkerData = res.data;
       setWorker(freshWorkerData);
-      
+
       // Update localStorage with fresh data to ensure RFID and other fields are stored
       const storedEmployee = localStorage.getItem('employee');
       if (storedEmployee) {
@@ -79,16 +79,16 @@ const EmployeeDashboard = () => {
       const parsedWorker = JSON.parse(storedWorker);
       setWorker(parsedWorker);
     }
-    
+
     // Always fetch fresh worker data from API to ensure all fields (including RFID) are included
     fetchWorkerData();
-    
+
     // Fetch jobs for this specific worker
     fetchJobs();
-    
+
     // Make face attendance function available globally
     window.openFaceAttendanceModal = () => setShowFaceModal(true);
-    
+
     // Cleanup function
     return () => {
       window.openFaceAttendanceModal = undefined;
@@ -103,12 +103,12 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     const loadModels = async () => {
       if (!showFaceModal || isModelLoaded) return;
-      
+
       try {
         // Set backend to WebGL to avoid WASM issues
         faceapi.tf.setBackend('webgl');
         await faceapi.tf.ready();
-        
+
         // Load models with better error handling
         await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
         await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
@@ -146,13 +146,13 @@ const EmployeeDashboard = () => {
     setFaceError('');
     setFaceSuccess('');
     setIsModelLoaded(false);
-    
+
     // Stop video stream
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
-    
+
     // Clear detection interval
     if (detectionIntervalRef.current) {
       clearInterval(detectionIntervalRef.current);
@@ -163,22 +163,22 @@ const EmployeeDashboard = () => {
   // Draw circular frame on canvas
   const drawFrame = (canvas) => {
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(canvas.width, canvas.height) * 0.3;
-    
+
     // Clear previous frame
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     // Draw circular frame
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
     ctx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
     ctx.lineWidth = 3;
     ctx.stroke();
-    
+
     // Draw center marker
     ctx.beginPath();
     ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
@@ -189,43 +189,43 @@ const EmployeeDashboard = () => {
   // Check if face is within the circular frame
   const isFaceInFrame = (detection, canvas) => {
     if (!detection || !canvas) return false;
-    
+
     const box = detection.box;
     const canvasCenterX = canvas.width / 2;
     const canvasCenterY = canvas.height / 2;
     const frameRadius = Math.min(canvas.width, canvas.height) * 0.3;
-    
+
     // Calculate face center
     const faceCenterX = box.x + box.width / 2;
     const faceCenterY = box.y + box.height / 2;
-    
+
     // Calculate distance from face center to canvas center
     const distance = Math.sqrt(
-      Math.pow(faceCenterX - canvasCenterX, 2) + 
+      Math.pow(faceCenterX - canvasCenterX, 2) +
       Math.pow(faceCenterY - canvasCenterY, 2)
     );
-    
+
     // Check if face is within the circular frame with size requirements
-    return distance <= frameRadius && 
-           box.width >= canvas.width * 0.25 &&
-           box.height >= canvas.height * 0.25 &&
-           box.width <= canvas.width * 0.7 &&
-           box.height <= canvas.height * 0.7;
+    return distance <= frameRadius &&
+      box.width >= canvas.width * 0.25 &&
+      box.height >= canvas.height * 0.25 &&
+      box.width <= canvas.width * 0.7 &&
+      box.height <= canvas.height * 0.7;
   };
 
   // Start camera
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           facingMode: 'user',
           width: { ideal: 640 },
           height: { ideal: 480 }
-        } 
+        }
       });
-      
+
       streamRef.current = stream;
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -246,7 +246,7 @@ const EmployeeDashboard = () => {
       setFaceError('Camera not accessible.');
       return;
     }
-    
+
     // Wait for video to be ready
     if (video.readyState !== 4) {
       if (video.networkState === video.NETWORK_LOADING || video.networkState === video.NETWORK_IDLE) {
@@ -265,7 +265,7 @@ const EmployeeDashboard = () => {
     try {
       // Detect face and get descriptor
       const detections = await faceapi
-        .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ 
+        .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({
           minConfidence: 0.7,
           maxResults: 1
         }))
@@ -275,9 +275,9 @@ const EmployeeDashboard = () => {
       // Draw circular frame
       const canvas = canvasRef.current;
       if (canvas) {
-        const displaySize = { 
-          width: video.videoWidth || video.width || 640, 
-          height: video.videoHeight || video.height || 480 
+        const displaySize = {
+          width: video.videoWidth || video.width || 640,
+          height: video.videoHeight || video.height || 480
         };
         canvas.width = displaySize.width;
         canvas.height = displaySize.height;
@@ -292,28 +292,28 @@ const EmployeeDashboard = () => {
           return;
         }
 
-        const displaySize = { 
-          width: video.videoWidth || video.width || 640, 
-          height: video.videoHeight || video.height || 480 
+        const displaySize = {
+          width: video.videoWidth || video.width || 640,
+          height: video.videoHeight || video.height || 480
         };
-        
+
         const canvas = canvasRef.current;
         if (canvas) {
           canvas.width = displaySize.width;
           canvas.height = displaySize.height;
-          
+
           // Draw circular frame
           drawFrame(canvas);
-          
+
           const resizedDetections = faceapi.resizeResults(detections, displaySize);
-          
+
           // Check if face is within the circular frame
           if (!isFaceInFrame(resizedDetections.detection, canvas)) {
             setFaceError('Please position your face within the circular frame.');
             setFaceProcessing(false);
             return;
           }
-          
+
           // Draw face detection
           try {
             faceapi.draw.drawDetections(canvas, resizedDetections);
@@ -326,7 +326,7 @@ const EmployeeDashboard = () => {
           try {
             const workerRes = await axios.get(`/api/workers/${worker._id}/face-data`);
             const workerFaceData = workerRes.data;
-            
+
             if (!workerFaceData || !workerFaceData.faceImages || workerFaceData.faceImages.length === 0) {
               setFaceError('No face data registered for this worker. Please contact administrator.');
               setFaceProcessing(false);
@@ -339,13 +339,13 @@ const EmployeeDashboard = () => {
               // For now, we'll simulate a match
               return new Float32Array(128); // Placeholder
             });
-            
+
             const labeledFaceDescriptors = [new faceapi.LabeledFaceDescriptors(worker._id, descriptors)];
             const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
-            
+
             // Find best match for the detected face
             const bestMatch = faceMatcher.findBestMatch(detections.descriptor);
-            
+
             if (bestMatch && bestMatch.label !== 'unknown' && bestMatch.distance < 0.6) {
               // Record attendance
               await recordAttendance(worker._id);
@@ -374,7 +374,7 @@ const EmployeeDashboard = () => {
     if (showFaceModal && isModelLoaded) {
       // Start camera when modal opens
       startCamera();
-      
+
       // Set up detection interval
       interval = setInterval(() => {
         if (!faceProcessing) {
@@ -394,7 +394,7 @@ const EmployeeDashboard = () => {
         workerId: workerId,
         method: 'face'
       });
-      
+
       if (response.status === 200) {
         setFaceSuccess('Attendance recorded successfully!');
         // Close modal after success
@@ -504,7 +504,7 @@ const EmployeeDashboard = () => {
                 <div className="ml-2 sm:ml-3">
                   <p className="text-xs text-gray-500">In Progress</p>
                   <p className="text-lg sm:text-xl font-bold">
-                    {jobs.filter(job => job.status === 'In Progress').length}
+                    {jobs.filter(job => !['Done', 'Cancelled', 'Picked Up'].includes(job.status)).length}
                   </p>
                 </div>
               </div>
@@ -544,7 +544,7 @@ const EmployeeDashboard = () => {
           <div className="bg-white rounded-lg shadow p-2 sm:p-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-4 gap-2">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900">Assigned Jobs</h2>
-              <button 
+              <button
                 onClick={() => navigate(`/employee/${id}/jobs`)}
                 className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition text-xs sm:text-sm"
               >
@@ -587,12 +587,11 @@ const EmployeeDashboard = () => {
                           {job.reported_issue}
                         </td>
                         <td className="px-1 py-1 whitespace-nowrap sm:px-2 sm:py-2 md:px-3 md:py-4">
-                          <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            job.status === 'Done' ? 'bg-green-100 text-green-800' :
-                            job.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                            job.status === 'Pending Approval' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
+                          <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${job.status === 'Done' ? 'bg-green-100 text-green-800' :
+                              job.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                                job.status === 'Pending Approval' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-gray-100 text-gray-800'
+                            }`}>
                             {job.status}
                           </span>
                         </td>
@@ -601,8 +600,8 @@ const EmployeeDashboard = () => {
                     {jobs.length > 5 && (
                       <tr>
                         <td colSpan="5" className="px-1 py-1 text-center text-xs text-gray-500 sm:px-2 sm:py-2 md:px-6 md:py-4">
-                          Showing {jobs.slice(0, 5).length} of {jobs.length} jobs. 
-                          <button 
+                          Showing {jobs.slice(0, 5).length} of {jobs.length} jobs.
+                          <button
                             onClick={() => navigate(`/employee/${id}/jobs`)}
                             className="text-blue-600 hover:text-blue-800 font-medium ml-1 text-xs"
                           >

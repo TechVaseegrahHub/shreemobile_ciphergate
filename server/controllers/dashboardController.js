@@ -7,15 +7,16 @@ exports.getDashboardSummary = async (req, res) => {
     // Get today's date range
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
     // Use Promise.all to fetch all data concurrently
     const [
       totalRevenueToday,
-      activeJobsCount,
-      jobsReadyForPickup,
+      assignedJobsCount,
+      inProgressCount,
+      completedJobsCount,
       lowStockCount,
       recentJobs
     ] = await Promise.all([
@@ -38,16 +39,26 @@ exports.getDashboardSummary = async (req, res) => {
         }
       ]).then(result => result.length > 0 ? result[0].total : 0),
 
-      // Active jobs count (jobs where status != 'Picked Up')
-      Job.countDocuments({ status: { $ne: 'Picked Up' } }),
+      // Assigned jobs count (jobs where a technician has been assigned)
+      Job.countDocuments({
+        assigned_technician: { $exists: true, $ne: null },
+        status: { $nin: ['Cancelled', 'Picked Up'] }
+      }),
 
-      // Jobs ready for pickup (jobs where status == 'Done')
-      Job.countDocuments({ status: 'Done' }),
+      // In Progress count (all jobs not yet done — includes Intake, In Progress, etc.)
+      Job.countDocuments({
+        status: { $nin: ['Done', 'Ready', 'Cancelled', 'Picked Up'] }
+      }),
+
+      // Completed jobs count (Done or Ready)
+      Job.countDocuments({
+        status: { $in: ['Done', 'Ready'] }
+      }),
 
       // Low stock count (parts where stock <= min_stock_alert)
-      Part.countDocuments({ 
-        $expr: { 
-          $lte: ['$stock', '$min_stock_alert'] 
+      Part.countDocuments({
+        $expr: {
+          $lte: ['$stock', '$min_stock_alert']
         }
       }),
 
@@ -59,10 +70,13 @@ exports.getDashboardSummary = async (req, res) => {
         .populate('taken_by_worker', 'name')
     ]);
 
+    console.log('[DASHBOARD] Counts:', { assignedJobsCount, inProgressCount, completedJobsCount, lowStockCount });
+
     res.json({
       total_revenue_today: totalRevenueToday,
-      active_jobs_count: activeJobsCount,
-      jobs_ready_for_pickup: jobsReadyForPickup,
+      assigned_jobs_count: assignedJobsCount,
+      in_progress_count: inProgressCount,
+      completed_jobs_count: completedJobsCount,
       low_stock_count: lowStockCount,
       recent_jobs: recentJobs
     });
@@ -71,15 +85,16 @@ exports.getDashboardSummary = async (req, res) => {
   }
 };
 
+
 // GET /api/dashboard/financials
 exports.getFinancialData = async (req, res) => {
   try {
     // Get query parameters for filtering
     const { dateFrom, dateTo, department, part, serviceCharge, month, year } = req.query;
-    
+
     // Build date filter
     let dateFilter = {};
-    
+
     // Apply date range filter if both dates are provided
     if (dateFrom && dateTo) {
       dateFilter.repair_job_taken_time = {
@@ -104,7 +119,7 @@ exports.getFinancialData = async (req, res) => {
         const startDate = new Date(currentYear, parseInt(month) - 1, 1);
         const endDate = new Date(currentYear, parseInt(month), 0);
         endDate.setHours(23, 59, 59, 999);
-        
+
         dateFilter.repair_job_taken_time = {
           $gte: startDate,
           $lte: endDate
@@ -118,23 +133,23 @@ exports.getFinancialData = async (req, res) => {
       }
     }
     // If no filters are specified, dateFilter remains empty to get all data
-    
 
-    
+
+
     // Apply department filter if specified
     if (department) {
       dateFilter.department = department;
     }
-    
-    
+
+
     // Log the date filter for debugging
     console.log('Financials API - Date filter:', dateFilter);
     console.log('Financials API - Query parameters:', { dateFrom, dateTo, department, part, month, year });
-    
+
     // Get jobs with parts_used populated
     // If part filter is specified, find jobs that have that specific part
     let jobsQuery = Job.find(dateFilter);
-    
+
     if (part) {
       // Filter jobs that have the specific part in their parts_used array
       jobsQuery = Job.find({
@@ -142,7 +157,7 @@ exports.getFinancialData = async (req, res) => {
         'parts_used.part': part
       });
     }
-    
+
     const jobs = await jobsQuery
       .populate({
         path: 'parts_used.part',
@@ -153,21 +168,21 @@ exports.getFinancialData = async (req, res) => {
         }
       })
       .populate('department', 'name');
-    
+
     console.log('Financials API - Number of jobs found:', jobs.length);
-    
+
     // Calculate revenue from jobs (service charges + parts revenue)
     let jobRevenueByDepartment = {};
     let jobMonthlyRevenue = {};
     let jobPartsRevenue = {};
-    
+
     jobs.forEach(job => {
       console.log('Processing job:', job._id, 'Service charges:', job.service_charges, 'Parts used:', job.parts_used?.length || 0);
-      
+
       // Calculate parts revenue for this job
       let partsRevenue = 0;
       let partsUsed = job.parts_used || [];
-      
+
       partsUsed.forEach(partUsed => {
         const partData = partUsed.part;
         if (partData) {
@@ -175,11 +190,11 @@ exports.getFinancialData = async (req, res) => {
           const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : (partData.cost_price || 0);
           const unitSellingPrice = partData.selling_price || 0;
           const quantity = partUsed.quantity || 0;
-          
+
           // Calculate revenue per unit (selling price - cost price)
           const unitRevenue = unitSellingPrice - unitCost;
           const totalRevenue = unitRevenue * quantity;
-          
+
           console.log('Part revenue calculation:', {
             partName: partData.name,
             unitCost,
@@ -188,9 +203,9 @@ exports.getFinancialData = async (req, res) => {
             unitRevenue,
             totalRevenue
           });
-          
+
           partsRevenue += totalRevenue;
-          
+
           // Track parts revenue by part name
           const partName = partData.name || 'Unknown';
           if (!jobPartsRevenue[partName]) {
@@ -205,18 +220,18 @@ exports.getFinancialData = async (req, res) => {
           jobPartsRevenue[partName].count += quantity;
         }
       });
-      
+
       // Total revenue for this job = parts revenue + service charges
       const jobTotalRevenue = partsRevenue + (job.service_charges || 0);
       console.log('Job total revenue:', jobTotalRevenue);
-      
+
       // Group by department
       const deptName = job.department?.name || 'General';
       if (!jobRevenueByDepartment[deptName]) {
         jobRevenueByDepartment[deptName] = 0;
       }
       jobRevenueByDepartment[deptName] += jobTotalRevenue;
-      
+
       // Group by month
       const monthKey = new Date(job.repair_job_taken_time).toLocaleString('default', { month: 'short' });
       if (!jobMonthlyRevenue[monthKey]) {
@@ -224,27 +239,27 @@ exports.getFinancialData = async (req, res) => {
       }
       jobMonthlyRevenue[monthKey] += jobTotalRevenue;
     });
-    
+
     console.log('Revenue calculations completed:', {
       jobRevenueByDepartment,
       jobMonthlyRevenue,
       jobPartsRevenue
     });
-    
+
     // Convert to arrays for charting
     const revenueByDepartment = Object.entries(jobRevenueByDepartment).map(([dept, revenue]) => ({
       department: dept,
       revenue: revenue
     }));
-    
+
     const monthlyRevenue = Object.entries(jobMonthlyRevenue).map(([month, revenue]) => ({
       month: month,
       revenue: revenue
     }));
-    
+
     // Parts revenue analysis
     const partsRevenueAnalysis = Object.values(jobPartsRevenue);
-    
+
     // Also get traditional transaction data for comparison
     // Use the same date filter for transactions if date range is provided
     let transactionDateFilter = {};
@@ -270,7 +285,7 @@ exports.getFinancialData = async (req, res) => {
         const startDate = new Date(currentYear, parseInt(month) - 1, 1);
         const endDate = new Date(currentYear, parseInt(month), 0);
         endDate.setHours(23, 59, 59, 999);
-        
+
         transactionDateFilter = {
           date: {
             $gte: startDate,
@@ -287,7 +302,7 @@ exports.getFinancialData = async (req, res) => {
         };
       }
     }
-    
+
     // Transaction-based revenue by department
     const transactionMatchCondition = {
       type: 'Income'
@@ -295,7 +310,7 @@ exports.getFinancialData = async (req, res) => {
     if (transactionDateFilter.date) {
       transactionMatchCondition.date = transactionDateFilter.date;
     }
-    
+
     const transactionRevenueByDepartment = await Transaction.aggregate([
       {
         $match: transactionMatchCondition
@@ -369,7 +384,7 @@ exports.getFinancialData = async (req, res) => {
       const cost = part.cost_price || 0;
       const selling = part.selling_price || 0;
       const profitMargin = cost > 0 ? ((selling - cost) / cost * 100).toFixed(2) : 0;
-      
+
       return {
         _id: part._id,
         name: part.name,
@@ -380,7 +395,7 @@ exports.getFinancialData = async (req, res) => {
         profit_margin: parseFloat(profitMargin)
       };
     });
-    
+
     // Calculate total jobs revenue consistently with the same logic used in the main loop
     const totalJobsRevenue = jobs.reduce((sum, job) => {
       // Calculate revenue from parts + service charges
@@ -397,11 +412,11 @@ exports.getFinancialData = async (req, res) => {
       });
       return sum + partsRevenue + (job.service_charges || 0);
     }, 0);
-    
+
     // Calculate total service charges separately - use the same filtering approach as service charges details API
     // Build the base date filter without the 'part' filter that affects the main jobs query
     let baseDateFilter = {};
-    
+
     // Apply date range filter if both dates are provided
     if (dateFrom && dateTo) {
       baseDateFilter.repair_job_taken_time = {
@@ -426,7 +441,7 @@ exports.getFinancialData = async (req, res) => {
         const startDate = new Date(currentYear, parseInt(month) - 1, 1);
         const endDate = new Date(currentYear, parseInt(month), 0);
         endDate.setHours(23, 59, 59, 999);
-        
+
         baseDateFilter.repair_job_taken_time = {
           $gte: startDate,
           $lte: endDate
@@ -439,63 +454,63 @@ exports.getFinancialData = async (req, res) => {
         };
       }
     }
-    
+
     // Apply department filter if specified (same as service charges details API)
     if (department) {
       baseDateFilter.department = department;
     }
-    
+
     // Apply the same service charges filter as used in service charges details API
     const serviceChargeFilter = {
       ...baseDateFilter,
       service_charges: { $exists: true, $ne: null, $ne: '', $gt: 0 }
     };
-    
+
     console.log('Financials API - Getting service charge jobs with filter:', serviceChargeFilter);
-    
+
     // First, let's get ALL jobs to see what's in the database
     const allJobsCount = await Job.countDocuments();
     console.log('Financials API - Total jobs in database:', allJobsCount);
-    
+
     // Get jobs with service_charges field
     const jobsWithServiceCharges = await Job.find({ service_charges: { $exists: true } });
     console.log('Financials API - Jobs with service_charges field:', jobsWithServiceCharges.length);
-    
+
     // Check some of these jobs
     jobsWithServiceCharges.slice(0, 5).forEach((job, index) => {
       console.log(`Sample Job ${index + 1}: ID=${job._id}, service_charges=${job.service_charges}, type=${typeof job.service_charges}`);
     });
-    
+
     // Now get jobs with our specific filter
     const serviceChargeJobs = await Job.find(serviceChargeFilter);
     console.log('Financials API - Found', serviceChargeJobs.length, 'jobs with service charges after applying date filter');
-    
+
     // Debug each job's service charge value
     serviceChargeJobs.forEach((job, index) => {
       console.log(`Job ${index + 1}: ID=${job._id}, service_charges=${job.service_charges}, type=${typeof job.service_charges}`);
     });
-    
+
     // Filter for jobs with positive service charges and calculate total
     const validServiceChargeJobs = serviceChargeJobs.filter(job => {
       const serviceChargeValue = parseFloat(job.service_charges) || 0;
       console.log(`Job ${job._id} - Raw value: ${job.service_charges}, Parsed: ${serviceChargeValue}, Positive: ${serviceChargeValue > 0}`);
       return serviceChargeValue > 0;
     });
-    
+
     console.log('Financials API - Found', validServiceChargeJobs.length, 'jobs with positive service charges');
-    
+
     const totalServiceCharges = validServiceChargeJobs.reduce((sum, job) => {
       const serviceChargeValue = parseFloat(job.service_charges) || 0;
       console.log(`Adding to total: ${serviceChargeValue}, Running total: ${sum + serviceChargeValue}`);
       return sum + serviceChargeValue;
     }, 0);
-    
+
     console.log('Financials API - Final calculated total:', totalServiceCharges);
-    
+
     // Round to 2 decimal places to handle floating point precision
     const roundedTotalServiceCharges = Number(totalServiceCharges.toFixed(2));
     console.log('Financials API - Total service charges calculated:', roundedTotalServiceCharges);
-    
+
     // Combine job-based and transaction-based data
     const responseData = {
       revenue_by_department: revenueByDepartment,
@@ -507,7 +522,7 @@ exports.getFinancialData = async (req, res) => {
       total_jobs_revenue: totalJobsRevenue,
       total_service_charges: roundedTotalServiceCharges
     };
-    
+
     console.log('Financials API - Returning response data:', {
       revenue_by_department_count: responseData.revenue_by_department.length,
       monthly_revenue_count: responseData.monthly_revenue.length,
@@ -516,7 +531,7 @@ exports.getFinancialData = async (req, res) => {
       total_jobs_revenue: responseData.total_jobs_revenue,
       total_service_charges: responseData.total_service_charges
     });
-    
+
     res.json(responseData);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -528,10 +543,10 @@ exports.getServiceChargeDetails = async (req, res) => {
   try {
     // Get query parameters for filtering
     const { dateFrom, dateTo, department, part, serviceCharge, month, year } = req.query;
-    
+
     // Build date filter
     let dateFilter = {};
-    
+
     // Apply date range filter if both dates are provided
     if (dateFrom && dateTo) {
       dateFilter.repair_job_taken_time = {
@@ -556,7 +571,7 @@ exports.getServiceChargeDetails = async (req, res) => {
         const startDate = new Date(currentYear, parseInt(month) - 1, 1);
         const endDate = new Date(currentYear, parseInt(month), 0);
         endDate.setHours(23, 59, 59, 999);
-        
+
         dateFilter.repair_job_taken_time = {
           $gte: startDate,
           $lte: endDate
@@ -570,15 +585,15 @@ exports.getServiceChargeDetails = async (req, res) => {
       }
     }
     // If no filters are specified, dateFilter remains empty to get all data
-    
+
     // Apply department filter if specified
     if (department) {
       dateFilter.department = department;
     }
-    
+
     console.log('Service Charge Details API - Date filter:', dateFilter);
     console.log('Service Charge Details API - Query parameters:', { dateFrom, dateTo, department, part, month, year });
-    
+
     // Get jobs with service charges, populated with customer info
     console.log('Service Charges Details API - Getting jobs with filter:', {
       ...dateFilter,
@@ -591,17 +606,17 @@ exports.getServiceChargeDetails = async (req, res) => {
       .populate('customer', 'name')
       .populate('department', 'name')
       .populate('taken_by_worker', 'name');
-    
+
     console.log('Service Charges Details API - Found', jobs.length, 'jobs with service charges');
-    
+
     // Debug each job's service charge value in details API
     jobs.forEach((job, index) => {
       const serviceChargeValue = parseFloat(job.service_charges) || 0;
       console.log(`Details API - Job ${index + 1}: ID=${job._id}, service_charges=${job.service_charges}, type=${typeof job.service_charges}, parsed=${serviceChargeValue}`);
     });
-    
+
     console.log('Service Charge Details API - Number of jobs with service charges found:', jobs.length);
-    
+
     // Format the service charge details
     const serviceChargeDetails = jobs.map(job => {
       return {
@@ -614,26 +629,26 @@ exports.getServiceChargeDetails = async (req, res) => {
         status: job.status || 'N/A'
       };
     });
-    
+
     // Filter for positive service charges and calculate total
     console.log('Service Charge Details API - Processing', serviceChargeDetails.length, 'details');
-    
+
     const validServiceChargeDetails = serviceChargeDetails.filter(detail => {
       const serviceChargeValue = parseFloat(detail.serviceChargeAmount) || 0;
       console.log(`Details API - Detail ID=${detail.jobId}, raw amount=${detail.serviceChargeAmount}, parsed=${serviceChargeValue}, positive=${serviceChargeValue > 0}`);
       return serviceChargeValue > 0;
     });
-    
+
     console.log('Service Charge Details API - Found', validServiceChargeDetails.length, 'valid details with positive amounts');
-    
+
     const totalServiceCharge = validServiceChargeDetails.reduce((sum, detail) => {
       const serviceChargeValue = parseFloat(detail.serviceChargeAmount) || 0;
       console.log(`Details API - Adding ${serviceChargeValue} to total, running total: ${sum + serviceChargeValue}`);
       return sum + serviceChargeValue;
     }, 0);
-    
+
     console.log('Service Charge Details API - Final total:', totalServiceCharge);
-    
+
     res.json({
       details: serviceChargeDetails,
       totalServiceCharge: totalServiceCharge,
@@ -650,10 +665,10 @@ exports.getPartsRevenueDetails = async (req, res) => {
   try {
     // Get query parameters for filtering
     const { dateFrom, dateTo, department, part, month, year } = req.query;
-    
+
     // Build date filter
     let dateFilter = {};
-    
+
     // Apply date range filter if both dates are provided
     if (dateFrom && dateTo) {
       dateFilter.repair_job_taken_time = {
@@ -678,7 +693,7 @@ exports.getPartsRevenueDetails = async (req, res) => {
         const startDate = new Date(currentYear, parseInt(month) - 1, 1);
         const endDate = new Date(currentYear, parseInt(month), 0);
         endDate.setHours(23, 59, 59, 999);
-        
+
         dateFilter.repair_job_taken_time = {
           $gte: startDate,
           $lte: endDate
@@ -692,21 +707,21 @@ exports.getPartsRevenueDetails = async (req, res) => {
       }
     }
     // If no filters are specified, dateFilter remains empty to get all data
-    
+
     // Apply department filter if specified
     if (department) {
       dateFilter.department = department;
     }
-    
+
     // Apply part filter if specified
     if (part) {
       // Filter jobs that have the specific part in their parts_used array
       dateFilter['parts_used.part'] = part;
     }
-    
+
     console.log('Parts Revenue Details API - Date filter:', dateFilter);
     console.log('Parts Revenue Details API - Query parameters:', { dateFrom, dateTo, department, part, month, year });
-    
+
     // Get jobs with parts_used populated
     const jobs = await Job.find(dateFilter)
       .populate({
@@ -719,15 +734,15 @@ exports.getPartsRevenueDetails = async (req, res) => {
       })
       .populate('customer', 'name')
       .populate('department', 'name');
-    
+
     console.log('Parts Revenue Details API - Number of jobs found:', jobs.length);
-    
+
     // Calculate parts revenue details for each job
     let partsRevenueDetails = [];
-    
+
     jobs.forEach(job => {
       console.log('Processing job for parts revenue details:', job._id, 'Parts used:', job.parts_used?.length || 0);
-      
+
       // Process each part used in this job
       (job.parts_used || []).forEach(partUsed => {
         const partData = partUsed.part;
@@ -736,13 +751,13 @@ exports.getPartsRevenueDetails = async (req, res) => {
           const unitCost = partUsed.edited_cost !== undefined ? partUsed.edited_cost : (partData.cost_price || 0);
           const unitSellingPrice = partData.selling_price || 0;
           const quantity = partUsed.quantity || 0;
-          
+
           // Calculate revenue per unit (selling price - cost price)
           const unitRevenue = unitSellingPrice - unitCost;
           const totalRevenue = unitRevenue * quantity;
           const totalCost = unitCost * quantity;
           const totalSellingPrice = unitSellingPrice * quantity;
-          
+
           partsRevenueDetails.push({
             jobId: job._id,
             customerName: job.customer?.name || 'N/A',
@@ -761,17 +776,17 @@ exports.getPartsRevenueDetails = async (req, res) => {
         }
       });
     });
-    
+
     // Calculate total parts revenue
     const totalPartsRevenue = partsRevenueDetails.reduce((sum, detail) => sum + detail.totalRevenue, 0);
     const totalPartsSold = partsRevenueDetails.reduce((sum, detail) => sum + detail.quantity, 0);
-    
+
     console.log('Parts Revenue Details API - Calculated totals:', {
       totalPartsRevenue,
       totalPartsSold,
       detailsCount: partsRevenueDetails.length
     });
-    
+
     res.json({
       details: partsRevenueDetails,
       totalPartsRevenue: totalPartsRevenue,

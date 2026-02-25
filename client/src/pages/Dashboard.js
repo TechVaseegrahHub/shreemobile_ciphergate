@@ -5,8 +5,9 @@ import api from '../services/api';
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({
     total_revenue_today: 0,
-    active_jobs_count: 0,
-    jobs_ready_for_pickup: 0,
+    assigned_jobs_count: 0,
+    in_progress_count: 0,
+    completed_jobs_count: 0,
     low_stock_count: 0,
     recent_jobs: []
   });
@@ -31,7 +32,7 @@ const Dashboard = () => {
       console.error(err);
       setError('Failed to fetch dashboard data');
       setLoading(false);
-      
+
       // If it's a 401 error, redirect to login
       if (err.response && err.response.status === 401) {
         localStorage.removeItem('admin');
@@ -59,10 +60,11 @@ const Dashboard = () => {
 
   // Get status color
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'Intake': return 'bg-gray-200 text-gray-800';
       case 'In Progress': return 'bg-blue-100 text-blue-800';
       case 'Done': return 'bg-green-100 text-green-800';
+      case 'Ready': return 'bg-purple-100 text-purple-800';
       default: return 'bg-yellow-100 text-yellow-800';
     }
   };
@@ -115,12 +117,12 @@ const Dashboard = () => {
           <div className="flex items-center">
             <div className="rounded-full bg-blue-100 p-2 mr-3">
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
               </svg>
             </div>
             <div>
-              <p className="text-gray-500 text-xs">Active Jobs</p>
-              <p className="text-lg font-bold text-gray-900">{dashboardData.active_jobs_count}</p>
+              <p className="text-gray-500 text-xs">Assigned Jobs</p>
+              <p className="text-lg font-bold text-gray-900">{dashboardData.assigned_jobs_count}</p>
             </div>
           </div>
         </div>
@@ -129,26 +131,26 @@ const Dashboard = () => {
           <div className="flex items-center">
             <div className="rounded-full bg-yellow-100 p-2 mr-3">
               <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
             <div>
-              <p className="text-gray-500 text-xs">Ready for Pickup</p>
-              <p className="text-lg font-bold text-gray-900">{dashboardData.jobs_ready_for_pickup}</p>
+              <p className="text-gray-500 text-xs">In Progress</p>
+              <p className="text-lg font-bold text-gray-900">{dashboardData.in_progress_count}</p>
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
-            <div className="rounded-full bg-red-100 p-2 mr-3">
-              <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            <div className="rounded-full bg-purple-100 p-2 mr-3">
+              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
             <div>
-              <p className="text-gray-500 text-xs">Low Stock</p>
-              <p className="text-lg font-bold text-gray-900">{dashboardData.low_stock_count}</p>
+              <p className="text-gray-500 text-xs">Completed Jobs</p>
+              <p className="text-lg font-bold text-gray-900">{dashboardData.completed_jobs_count}</p>
             </div>
           </div>
         </div>

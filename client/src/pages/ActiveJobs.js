@@ -40,25 +40,26 @@ const ActiveJobs = () => {
       setFilteredJobs(jobs);
       return;
     }
-    
+
     const term = searchTerm.toLowerCase();
-    const filtered = jobs.filter(job => 
+    const filtered = jobs.filter(job =>
       job.customer?.name?.toLowerCase().includes(term) ||
       job.device_model?.toLowerCase().includes(term) ||
       job.reported_issue?.toLowerCase().includes(term) ||
       job.job_card_number?.includes(term) ||
       job._id.slice(-6).includes(term)
     );
-    
+
     setFilteredJobs(filtered);
   }, [jobs, searchTerm]);
 
   // Get status color
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'Intake': return 'bg-gray-200 text-gray-800';
       case 'In Progress': return 'bg-blue-100 text-blue-800';
       case 'Done': return 'bg-green-100 text-green-800';
+      case 'Ready': return 'bg-purple-100 text-purple-800';
       default: return 'bg-yellow-100 text-yellow-800';
     }
   };
