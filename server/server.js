@@ -26,10 +26,7 @@ const Admin = require('./models/Admin');
 const app = express();
 
 // Configure CORS to allow credentials
-app.use(cors({
-  origin: '*', 
-  credentials: true 
-}));
+app.use(cors({...}))
 
 // Middleware
 // Increase payload size limit for face images
