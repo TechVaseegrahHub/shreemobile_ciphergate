@@ -25,8 +25,13 @@ const Admin = require('./models/Admin');
 // Initialize app
 const app = express();
 
-// Configure CORS to allow credentials
-app.use(cors({...}))
+app.use(cors({
+  origin: [
+    'http://localhost:3000', 
+    'https://transcendent-entremet-d718b4.netlify.app'
+  ],
+  credentials: true
+}));
 
 // Middleware
 // Increase payload size limit for face images
