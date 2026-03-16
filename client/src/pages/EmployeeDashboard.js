@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
+import api from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import EmployeeSidebar from '../components/EmployeeSidebar';
 
@@ -34,7 +35,7 @@ const EmployeeDashboard = () => {
 
   const fetchWorkerData = useCallback(async () => {
     try {
-      const res = await axios.get(`/api/workers/${id}`);
+      const res = await api.get(`/workers/${id}`);
       const freshWorkerData = res.data;
       setWorker(freshWorkerData);
 
@@ -55,8 +56,9 @@ const EmployeeDashboard = () => {
   const fetchJobs = useCallback(async () => {
     try {
       // Use the new endpoint that fetches jobs for a specific worker
-      const res = await axios.get(`/api/jobs/worker/${id}`);
-      setJobs(res.data);
+      const res = await api.get(`/jobs/worker/${id}`);
+      // Guard: ensure the response is always an array
+      setJobs(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch jobs');
