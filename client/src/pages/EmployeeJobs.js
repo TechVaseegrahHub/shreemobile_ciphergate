@@ -51,8 +51,9 @@ const EmployeeJobs = () => {
   const fetchJobs = useCallback(async () => {
     try {
       const res = await api.get(`/jobs/worker/${id}`);
-      setJobs(res.data);
-      setFilteredJobs(res.data);
+      const jobsData = Array.isArray(res.data) ? res.data : [];
+      setJobs(jobsData);
+      setFilteredJobs(jobsData);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch jobs');
