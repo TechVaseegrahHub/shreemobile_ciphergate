@@ -25,9 +25,6 @@ const Admin = require('./models/Admin');
 // Initialize app
 const app = express();
 
-// Initialize app
-const app = express();
-
 app.use(cors({
   origin: [
     'http://localhost:3000',
