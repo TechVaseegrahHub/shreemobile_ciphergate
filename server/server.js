@@ -25,13 +25,16 @@ const Admin = require('./models/Admin');
 // Initialize app
 const app = express();
 
+// Initialize app
+const app = express();
+
 app.use(cors({
   origin: [
-    'http://localhost:3000', 
-    'http://65.2.21.175',
-    'https://65.2.21.175',
+    'http://localhost:3000',
+    'http://65.2.21.175'
   ],
   credentials: true
+})); // <--- This was missing the }));
 
 // Middleware
 // Increase payload size limit for face images
