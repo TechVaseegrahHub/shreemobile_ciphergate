@@ -28,10 +28,10 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000', 
-    'https://transcendent-entremet-d718b4.netlify.app'
+    'https://transcendent-entremet-d718b4.netlify.app',
+    'http://65.2.21.175' // Add your AWS IP here
   ],
   credentials: true
-}));
 
 // Middleware
 // Increase payload size limit for face images
