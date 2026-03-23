@@ -28,7 +28,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'http://65.2.21.175'
+    'http://65.2.21.175',
+    'https://shreeramanamobiles.ciphergate.in' // Add this line
   ],
   credentials: true
 })); // <--- This was missing the }));
