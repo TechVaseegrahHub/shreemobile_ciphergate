@@ -28,8 +28,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000', 
-    'https://transcendent-entremet-d718b4.netlify.app',
-    'http://65.2.21.175' // Add your AWS IP here
+    'http://65.2.21.175',
+    'https://65.2.21.175',
   ],
   credentials: true
 
