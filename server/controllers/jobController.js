@@ -322,13 +322,63 @@ exports.updateJob = async (req, res) => {
 };
 
 // GET /api/jobs/active
+// Query params:
+//   filter     = 'today' (default) | 'all' | 'range'
+//   startDate  = ISO date string (used when filter=range)
+//   endDate    = ISO date string (used when filter=range)
+//   page       = page number (default: 1)
+//   limit      = items per page (default: 15)
 exports.getActiveJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ status: { $nin: ['Picked Up', 'Cancelled'] } })
-      .populate('customer')
-      .populate('taken_by_worker', 'name')
-      .sort({ repair_job_taken_time: -1 });
-    res.json(jobs);
+    const { filter = 'today', startDate, endDate, page = 1, limit = 15 } = req.query;
+
+    // Base query — exclude terminal statuses
+    const query = { status: { $nin: ['Picked Up', 'Cancelled'] } };
+
+    if (filter === 'today') {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      // Use ObjectId-based date range (creation time embedded in _id)
+      const startId = mongoose.Types.ObjectId.createFromTime(Math.floor(todayStart.getTime() / 1000));
+      const endId   = mongoose.Types.ObjectId.createFromTime(Math.floor(todayEnd.getTime() / 1000));
+      query._id = { $gte: startId, $lte: endId };
+
+    } else if (filter === 'range' && startDate && endDate) {
+      const rangeStart = new Date(startDate);
+      rangeStart.setHours(0, 0, 0, 0);
+      const rangeEnd = new Date(endDate);
+      rangeEnd.setHours(23, 59, 59, 999);
+
+      const startId = mongoose.Types.ObjectId.createFromTime(Math.floor(rangeStart.getTime() / 1000));
+      const endId   = mongoose.Types.ObjectId.createFromTime(Math.floor(rangeEnd.getTime() / 1000));
+      query._id = { $gte: startId, $lte: endId };
+    }
+    // filter === 'all' → no date constraint
+
+    const pageNum  = Math.max(1, parseInt(page));
+    const limitNum = Math.max(1, parseInt(limit));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [jobs, total] = await Promise.all([
+      Job.find(query)
+        .populate('customer')
+        .populate('taken_by_worker', 'name')
+        .sort({ _id: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Job.countDocuments(query)
+    ]);
+
+    res.json({
+      jobs,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      hasMore: skip + jobs.length < total
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
