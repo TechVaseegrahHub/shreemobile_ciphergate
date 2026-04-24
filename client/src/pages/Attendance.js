@@ -14,7 +14,9 @@ const Attendance = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Today's date in YYYY-MM-DD format
+  const [filterType, setFilterType] = useState('date'); // 'date', 'dateRange', 'all'
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [cooldownTimer, setCooldownTimer] = useState(null); // For displaying cooldown timer
   
   // RFID Modal states
@@ -179,17 +181,38 @@ const Attendance = () => {
     }
   };
 
-  const filterWorkers = useCallback(() => {
-    // First, filter workers who have attendance records for the selected date
-    let workersWithAttendance = workers.filter(worker => {
-      if (!worker.attendanceRecords) return false;
+  const getFilteredRecordsForWorker = useCallback((worker) => {
+    if (!worker.attendanceRecords) return [];
+    
+    return worker.attendanceRecords.filter(record => {
+      if (filterType === 'all') return true;
       
-      // Check if worker has any attendance records for the selected date
-      return worker.attendanceRecords.some(record => {
-        const recordDate = new Date(record.date);
-        const selected = new Date(selectedDate);
-        return recordDate.toDateString() === selected.toDateString();
-      });
+      const recordDate = new Date(record.date);
+      recordDate.setHours(0, 0, 0, 0);
+      
+      if (filterType === 'date') {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        return recordDate.getTime() === start.getTime();
+      }
+      
+      if (filterType === 'dateRange') {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        return recordDate.getTime() >= start.getTime() && recordDate.getTime() <= end.getTime();
+      }
+      
+      return true;
+    });
+  }, [filterType, startDate, endDate]);
+
+  const filterWorkers = useCallback(() => {
+    // First, filter workers who have attendance records matching filters
+    let workersWithAttendance = workers.filter(worker => {
+      const records = getFilteredRecordsForWorker(worker);
+      return records.length > 0;
     });
     
     // Then apply search filter only to workers with attendance
@@ -202,7 +225,7 @@ const Attendance = () => {
     }
     
     setFilteredWorkers(workersWithAttendance);
-  }, [workers, searchTerm, selectedDate]);
+  }, [workers, searchTerm, getFilteredRecordsForWorker]);
 
   // Filter workers based on search term and selected date
   useEffect(() => {
@@ -1233,21 +1256,8 @@ const Attendance = () => {
   };
 
 
-  // Get attendance records for selected date
-  const getAttendanceForDate = (worker) => {
-    if (!worker.attendanceRecords) return [];
-    
-    return worker.attendanceRecords.filter(record => {
-      const recordDate = new Date(record.date);
-      const selected = new Date(selectedDate);
-      return recordDate.toDateString() === selected.toDateString();
-    });
-  };
-
-  // Process attendance records to group by day and show all punches
-  const processAttendanceByDay = (worker) => {
-    const records = getAttendanceForDate(worker);
-    
+  // Process attendance records to get all punches in order
+  const processPunches = (records) => {
     if (!records || records.length === 0) return [];
     
     // Extract all individual punch times and maintain their order
@@ -1256,18 +1266,12 @@ const Attendance = () => {
     records.forEach(record => {
       // Add checkIn time if exists
       if (record.checkIn) {
-        allPunches.push({
-          time: record.checkIn,
-          type: 'in'
-        });
+        allPunches.push({ time: record.checkIn, type: 'in' });
       }
       
       // Add checkOut time if exists
       if (record.checkOut) {
-        allPunches.push({
-          time: record.checkOut,
-          type: 'out'
-        });
+        allPunches.push({ time: record.checkOut, type: 'out' });
       }
     });
     
@@ -1277,10 +1281,8 @@ const Attendance = () => {
     return allPunches;
   };
 
-  // Calculate total duration for the day
-  const calculateTotalDuration = (worker) => {
-    const records = getAttendanceForDate(worker);
-    
+  // Calculate total duration for given records
+  const calculateDuration = (records) => {
     if (!records || records.length === 0) return '--:--:--';
     
     let totalMilliseconds = 0;
@@ -1692,8 +1694,8 @@ const Attendance = () => {
       {/* Search and Date Selection */}
       <div className="bg-white rounded shadow overflow-hidden mb-6">
         <div className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex-1">
+          <div className="flex flex-col md:flex-row gap-4 w-full">
+            <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Search Workers
               </label>
@@ -1702,19 +1704,48 @@ const Attendance = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by name, RFID, or department..."
-                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Date
-              </label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter Type</label>
+                <select 
+                  value={filterType} 
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="date">Single Date</option>
+                  <option value="dateRange">Date Range</option>
+                  <option value="all">All Dates</option>
+                </select>
+              </div>
+
+              {(filterType === 'date' || filterType === 'dateRange') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {filterType === 'date' ? 'Date' : 'Start Date'}
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              )}
+
+              {filterType === 'dateRange' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1725,17 +1756,22 @@ const Attendance = () => {
         <div className="border-b border-gray-200 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h3 className="text-lg font-semibold">Attendance Records</h3>
-            <p className="text-gray-600 mt-1">Attendance records for {formatDate(selectedDate)}</p>
+            <p className="text-gray-600 mt-1">
+              Attendance records
+              {filterType === 'date' && ` for ${formatDate(startDate)}`}
+              {filterType === 'dateRange' && ` from ${formatDate(startDate)} to ${formatDate(endDate)}`}
+              {filterType === 'all' && ` (All Dates)`}
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => exportAttendance(api, 'pdf')}
+              onClick={() => exportAttendance(api, 'pdf', { filterType, startDate, endDate })}
               className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition text-sm"
             >
               Export PDF
             </button>
             <button
-              onClick={() => exportAttendance(api, 'excel')}
+              onClick={() => exportAttendance(api, 'excel', { filterType, startDate, endDate })}
               className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition text-sm"
             >
               Export Excel
@@ -1749,7 +1785,6 @@ const Attendance = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID (RFID)</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">In Time</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Out Time</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
@@ -1758,76 +1793,112 @@ const Attendance = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredWorkers.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-                    No attendance records found for the selected date.
+                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                    No attendance records found for the selected filter.
                   </td>
                 </tr>
               ) : (
-                filteredWorkers.map(worker => {
-                  const allPunches = processAttendanceByDay(worker);
-                  const totalDuration = calculateTotalDuration(worker);
-                  
-                  // Separate in and out times while maintaining order
-                  const inTimes = [];
-                  const outTimes = [];
-                  
-                  // Distribute punches alternately between in and out columns
-                  allPunches.forEach((punch, index) => {
-                    if (index % 2 === 0) {
-                      // Even index (0, 2, 4, ...) goes to inTimes
-                      inTimes.push(punch);
-                    } else {
-                      // Odd index (1, 3, 5, ...) goes to outTimes
-                      outTimes.push(punch);
-                    }
+                (() => {
+                  // Extract all records from matched workers
+                  const allRecords = [];
+                  filteredWorkers.forEach(worker => {
+                    const records = getFilteredRecordsForWorker(worker);
+                    records.forEach(rec => {
+                      allRecords.push({ ...rec, worker });
+                    });
                   });
                   
-                  return (
-                    <tr key={worker._id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{worker.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {worker.rfid || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {worker.department ? worker.department.name : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(selectedDate)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {inTimes.length > 0 ? (
-                          <div className="flex flex-col space-y-1">
-                            {inTimes.map((punch, index) => (
-                              <span key={index} className="text-green-600 font-medium">
-                                {formatTime(punch.time)}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">--:-- --</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {outTimes.length > 0 ? (
-                          <div className="flex flex-col space-y-1">
-                            {outTimes.map((punch, index) => (
-                              <span key={index} className="text-red-600 font-medium">
-                                {formatTime(punch.time)}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">--:-- --</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {totalDuration}
-                      </td>
-                    </tr>
-                  );
-                })
+                  // Group by date
+                  const recordsByDate = {};
+                  allRecords.forEach(record => {
+                    const dateStr = new Date(record.date).toDateString();
+                    if (!recordsByDate[dateStr]) recordsByDate[dateStr] = [];
+                    recordsByDate[dateStr].push(record);
+                  });
+                  
+                  // Sort dates (newest first)
+                  const sortedDates = Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a));
+                  
+                  return sortedDates.map((dateStr) => {
+                    const dailyRecords = recordsByDate[dateStr];
+                    
+                    // Group daily records back by worker
+                    const workerDailyRecords = {};
+                    dailyRecords.forEach(rec => {
+                      const wId = rec.worker._id;
+                      if (!workerDailyRecords[wId]) workerDailyRecords[wId] = [];
+                      workerDailyRecords[wId].push(rec);
+                    });
+                    
+                    return (
+                      <React.Fragment key={dateStr}>
+                        <tr className="bg-blue-50 border-y border-blue-200">
+                          <td colSpan="6" className="px-6 py-3 text-sm font-bold text-gray-800">
+                            Date: {formatDate(dateStr)}
+                          </td>
+                        </tr>
+                        {Object.values(workerDailyRecords).map((wRecords, idx) => {
+                          const worker = wRecords[0].worker;
+                          const allPunches = processPunches(wRecords);
+                          const totalDuration = calculateDuration(wRecords);
+                          
+                          const inTimes = [];
+                          const outTimes = [];
+                          allPunches.forEach((punch, index) => {
+                            if (index % 2 === 0) {
+                              inTimes.push(punch);
+                            } else {
+                              outTimes.push(punch);
+                            }
+                          });
+                          
+                          return (
+                            <tr key={`${dateStr}-${worker._id}`} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{worker.name}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {worker.rfid || 'N/A'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {worker.department ? worker.department.name : 'N/A'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                {inTimes.length > 0 ? (
+                                  <div className="flex flex-col space-y-1">
+                                    {inTimes.map((punch, pIdx) => (
+                                      <span key={pIdx} className="text-green-600 font-medium">
+                                        {formatTime(punch.time)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">--:-- --</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                {outTimes.length > 0 ? (
+                                  <div className="flex flex-col space-y-1">
+                                    {outTimes.map((punch, pIdx) => (
+                                      <span key={pIdx} className="text-red-600 font-medium">
+                                        {formatTime(punch.time)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">--:-- --</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {totalDuration}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
+                    );
+                  });
+                })()
               )}
             </tbody>
           </table>

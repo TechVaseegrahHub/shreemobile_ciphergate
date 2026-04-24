@@ -3,15 +3,18 @@ const router = express.Router();
 const workerController = require('../controllers/workerController');
 
 // Map the endpoints to the controller functions
-router.get('/', workerController.getAllWorkers);        // GET /api/workers
-router.get('/:id', workerController.getWorkerById);     // GET /api/workers/:id
-router.post('/', workerController.createWorker);       // POST /api/workers
-router.put('/:id', workerController.updateWorker);     // PUT /api/workers/:id
-router.delete('/:id', workerController.deleteWorker);  // DELETE /api/workers/:id
-router.post('/login', workerController.loginWorker);   // POST /api/workers/login
-router.post('/attendance', workerController.recordAttendance); // POST /api/workers/attendance
-router.get('/attendance', workerController.getAttendanceRecords); // GET /api/workers/attendance
-router.get('/:id/face-data', workerController.getWorkerFaceData); // GET /api/workers/:id/face-data
+// Static routes
+router.get('/', workerController.getAllWorkers);
+router.post('/', workerController.createWorker);
+router.post('/login', workerController.loginWorker);
+router.post('/attendance', workerController.recordAttendance);
+router.get('/attendance', workerController.getAttendanceRecords);
+
+// Parameterized routes (must come after static routes to avoid route hijacking)
+router.get('/:id', workerController.getWorkerById);
+router.put('/:id', workerController.updateWorker);
+router.delete('/:id', workerController.deleteWorker);
+router.get('/:id/face-data', workerController.getWorkerFaceData);
 
 // IMPORTANT: You must export the router
 module.exports = router;

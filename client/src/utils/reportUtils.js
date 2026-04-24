@@ -263,25 +263,163 @@ export const exportDepartments = async (api, format = 'pdf') => {
 };
 
 // Function to export attendance
-export const exportAttendance = async (api, format = 'pdf') => {
+export const exportAttendance = async (api, format = 'pdf', filters = { filterType: 'date', startDate: new Date(), endDate: new Date() }) => {
   try {
     const response = await api.get('/workers/attendance');
-    const attendanceData = response.data;
+    const workers = response.data;
     
-    const headers = ['Worker Name', 'Date', 'Check-in', 'Check-out', 'Method', 'Department'];
-    const data = attendanceData.map(record => [
-      record.worker?.name || 'N/A',
-      formatDate(record.date),
-      formatTime(record.checkIn),
-      formatTime(record.checkOut),
-      record.method || 'N/A',
-      record.worker?.department?.name || 'N/A'
-    ]);
+    // Flatten attendance records from all workers
+    const flattenedAttendance = [];
+    workers.forEach(worker => {
+      if (worker.attendanceRecords && worker.attendanceRecords.length > 0) {
+        worker.attendanceRecords.forEach(record => {
+          flattenedAttendance.push({
+            ...record,
+            worker: {
+              name: worker.name,
+              department: worker.department
+            }
+          });
+        });
+      }
+    });
+
+    // Apply date filters
+    const filteredAttendance = flattenedAttendance.filter(record => {
+      if (filters.filterType === 'all') return true;
+      
+      const recordDate = new Date(record.date);
+      recordDate.setHours(0, 0, 0, 0);
+      
+      if (filters.filterType === 'date') {
+        const start = new Date(filters.startDate);
+        start.setHours(0, 0, 0, 0);
+        return recordDate.getTime() === start.getTime();
+      }
+      
+      if (filters.filterType === 'dateRange') {
+        const start = new Date(filters.startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(filters.endDate);
+        end.setHours(23, 59, 59, 999);
+        return recordDate.getTime() >= start.getTime() && recordDate.getTime() <= end.getTime();
+      }
+      
+      return true;
+    });
     
+    // Sort by date (newest first)
+    filteredAttendance.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Group attendance by date
+    const groupedData = {};
+    filteredAttendance.forEach(record => {
+      const dateStr = formatDate(record.date);
+      if (!groupedData[dateStr]) {
+        groupedData[dateStr] = [];
+      }
+      groupedData[dateStr].push([
+        record.worker?.name || 'N/A',
+        formatTime(record.checkIn),
+        formatTime(record.checkOut),
+        record.method || 'N/A',
+        record.worker?.department?.name || 'N/A'
+      ]);
+    });
+    
+    const headers = ['Worker Name', 'Check-in', 'Check-out', 'Method', 'Department'];
+    const title = 'Attendance Report';
+    const fileName = 'attendance_report';
+
     if (format === 'pdf') {
-      generatePDFReport('Attendance Report', headers, data, 'attendance_report');
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(18);
+      doc.text(title, 14, 20);
+      
+      // Add metadata date
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+      
+      let finalY = 40;
+      
+      if (Object.keys(groupedData).length === 0) {
+        doc.text("No attendance records found.", 14, finalY);
+      } else {
+        Object.keys(groupedData).forEach((dateStr, index) => {
+          // Add date header
+          doc.setFontSize(12);
+          doc.setFont(undefined, 'bold');
+          doc.text(`Date: ${dateStr}`, 14, finalY);
+          
+          autoTable(doc, {
+            head: [headers],
+            body: groupedData[dateStr],
+            startY: finalY + 5,
+            theme: 'grid',
+            headStyles: {
+              fillColor: [59, 130, 246], // blue-500
+              textColor: [255, 255, 255],
+              fontSize: 10,
+            },
+            bodyStyles: {
+              fontSize: 9,
+            },
+            margin: { left: 14, right: 14 },
+            styles: {
+              cellPadding: 5,
+            },
+            alternateRowStyles: {
+              fillColor: [243, 244, 246], // gray-100
+            },
+          });
+          
+          finalY = doc.lastAutoTable.finalY + 15;
+          
+          // Add a new page if the next section might get cut off
+          if (finalY > 250 && index < Object.keys(groupedData).length - 1) {
+            doc.addPage();
+            finalY = 20;
+          }
+        });
+      }
+      
+      doc.save(`${fileName}.pdf`);
+      
     } else {
-      generateExcelReport('Attendance Report', headers, data, 'attendance_report');
+      // Excel Format
+      const worksheetData = [];
+      
+      if (Object.keys(groupedData).length === 0) {
+        worksheetData.push(['No attendance records found.']);
+      } else {
+        Object.keys(groupedData).forEach((dateStr) => {
+          // Add a date header row
+          worksheetData.push([`Date: ${dateStr}`, '', '', '', '']); 
+          // Add column headers
+          worksheetData.push(headers);
+          // Add data rows
+          groupedData[dateStr].forEach(row => {
+            worksheetData.push(row);
+          });
+          // Add an empty row for nice spacing
+          worksheetData.push([]);
+        });
+      }
+      
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, title);
+      
+      // Add metadata tab
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+        [title],
+        [`Generated on: ${new Date().toLocaleString()}`],
+        []
+      ]), 'Metadata');
+      
+      XLSX.writeFile(workbook, `${fileName}.xlsx`);
     }
   } catch (error) {
     console.error('Error exporting attendance:', error);
