@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Color Variables */
+:root {
+  --color-primary: #2563eb; /* blue-600 */
+  --color-primary-hover: #1d4ed8; /* blue-700 */
+  --color-primary-light: #dbeafe; /* blue-100 */
+  --color-secondary: #64748b; /* slate-500 */
+  --color-background: #f8fafc; /* slate-50 */
+  --color-surface: #ffffff; /* white */
+  --color-surface-muted: #f1f5f9; /* slate-100 */
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-text-primary: #1e293b; /* slate-800 */
+  --color-text-secondary: #64748b; /* slate-500 */
+  --color-text-muted: #94a3b8; /* slate-400 */
+  --color-success: #10b981; /* emerald-500 */
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-error: #ef4444; /* red-500 */
+}
+
+/* 8px Grid System */
+:root {
+  --spacing-unit: 8px;
+}
