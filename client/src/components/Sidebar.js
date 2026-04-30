@@ -90,8 +90,11 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
   const [expanded, setExpanded]                   = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const handleExpand = () => { setExpanded(true);  onExpand?.();  };
+  const handleExpand   = () => { setExpanded(true);  onExpand?.();  };
   const handleCollapse = () => { setExpanded(false); onCollapse?.(); };
+
+  // On mobile: isOpen drives full expansion. On desktop: hover drives it.
+  const isFullyExpanded = expanded || isOpen;
 
   const isActive = (path) => location.pathname === path;
 
@@ -124,8 +127,8 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
           display: 'flex',
           alignItems: 'center',
           gap: 12,
-          padding: '6px 8px',          /* ← FIXED, never changes */
-          justifyContent: 'flex-start', /* ← FIXED, icons always left-anchored */
+          padding: '6px 8px',
+          justifyContent: 'flex-start',
           borderRadius: 13,
           textDecoration: 'none',
           background: active ? color : 'transparent',
@@ -138,7 +141,6 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
         onMouseEnter={e => { if (!active) e.currentTarget.style.background = `${color}16`; }}
         onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
       >
-        {/* Icon — absolutely stable, never moves */}
         <span style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           width: 36, height: 36, borderRadius: 10, flexShrink: 0,
@@ -148,13 +150,12 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
           {ICONS[item.key] && ICONS[item.key](iconCol)}
         </span>
 
-        {/* Label — fades in to the RIGHT of the stable icon */}
         <span style={{
           fontSize: 13.5,
           fontWeight: active ? 700 : 500,
           color: active ? '#fff' : '#374151',
-          opacity: expanded ? 1 : 0,
-          maxWidth: expanded ? 160 : 0,
+          opacity: isFullyExpanded ? 1 : 0,
+          maxWidth: isFullyExpanded ? 160 : 0,
           transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
           overflow: 'hidden',
           letterSpacing: '0.01em',
@@ -176,8 +177,8 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        padding: '6px 8px',          /* ← FIXED */
-        justifyContent: 'flex-start', /* ← FIXED */
+        padding: '6px 8px',
+        justifyContent: 'flex-start',
         borderRadius: 13,
         border: 'none',
         background: 'transparent',
@@ -199,8 +200,8 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
       <span style={{
         fontSize: 13.5, fontWeight: 500,
         color: ITEM_COLORS.logout,
-        opacity: expanded ? 1 : 0,
-        maxWidth: expanded ? 160 : 0,
+        opacity: isFullyExpanded ? 1 : 0,
+        maxWidth: isFullyExpanded ? 160 : 0,
         transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
         overflow: 'hidden',
         fontFamily: "'Inter', sans-serif",
@@ -238,7 +239,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
         onMouseLeave={handleCollapse}
         className={`slim-sidebar ${isOpen ? 'is-open' : ''}`}
         style={{
-          width: expanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED,
+          width: isFullyExpanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED,
           background: '#FFFFFF',
           minHeight: '100vh',
           position: 'fixed',
@@ -248,9 +249,9 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
           alignItems: 'stretch',
           paddingTop: 14,
           paddingBottom: 14,
-          paddingLeft: 10,  /* ← FIXED — icons never shift */
-          paddingRight: 10, /* ← FIXED */
-          boxShadow: expanded
+          paddingLeft: 10,
+          paddingRight: 10,
+          boxShadow: isFullyExpanded
             ? '4px 0 32px rgba(0,0,0,0.12)'
             : '2px 0 12px rgba(0,0,0,0.06)',
           borderRight: '1px solid rgba(0,0,0,0.05)',
@@ -260,17 +261,16 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
           overflowY: 'auto',
         }}
       >
-        {/* Logo row — ALWAYS flex-start so logo never moves */}
+        {/* Logo row + mobile close button */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: 10,
           marginBottom: 14,
           padding: '4px 0',
-          justifyContent: 'flex-start', /* ← FIXED */
+          justifyContent: 'flex-start',
           flexShrink: 0,
         }}>
-          {/* Logo box — fixed size, never moves */}
           <div style={{
             width: 36, height: 36, borderRadius: 10,
             background: 'linear-gradient(135deg,#1A1A2E,#2E2E50)',
@@ -282,16 +282,33 @@ const Sidebar = ({ isOpen, toggleSidebar, onExpand, onCollapse }) => {
             <img src={logo} alt="Logo" style={{ width: 26, height: 26, objectFit: 'contain', borderRadius: 5 }} />
           </div>
 
-          {/* Brand name — slides in to the RIGHT of the fixed logo */}
+          {/* Brand name + close btn — slides in when expanded */}
           <div style={{
-            opacity: expanded ? 1 : 0,
-            maxWidth: expanded ? 160 : 0,
+            opacity: isFullyExpanded ? 1 : 0,
+            maxWidth: isFullyExpanded ? 200 : 0,
             overflow: 'hidden',
             transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
             whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1,
           }}>
-            <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 800, color: '#1A1A2E', lineHeight: 1.2 }}>Shreerama</div>
-            <div style={{ fontSize: 9.5, fontWeight: 600, color: '#E8B84B', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Mobiles</div>
+            <div>
+              <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 800, color: '#1A1A2E', lineHeight: 1.2 }}>Shreerama</div>
+              <div style={{ fontSize: 9.5, fontWeight: 600, color: '#E8B84B', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Mobiles</div>
+            </div>
+            {/* Close button — only shows on mobile */}
+            <button
+              onClick={toggleSidebar}
+              className="lg:hidden"
+              style={{
+                background: 'rgba(0,0,0,0.06)', border: 'none',
+                width: 30, height: 30, borderRadius: 8, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginLeft: 'auto', flexShrink: 0,
+              }}
+              aria-label="Close sidebar"
+            >
+              {ICONS.close('#555')}
+            </button>
           </div>
         </div>
 

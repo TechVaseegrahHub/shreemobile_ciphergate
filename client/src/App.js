@@ -126,11 +126,12 @@ function AppContent() {
       />
 
       <div
+        className="page-content"
         style={{
           flex: 1,
           marginLeft: contentMarginLeft,
           transition: 'margin-left 0.28s cubic-bezier(0.4,0,0.2,1)',
-          minWidth: 0, // prevent flex overflow
+          minWidth: 0,
         }}
       >
         <Routes>

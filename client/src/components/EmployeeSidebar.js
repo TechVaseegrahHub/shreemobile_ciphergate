@@ -45,6 +45,9 @@ const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar, onExpand, on
   const handleExpand   = () => { setExpanded(true);  onExpand?.();  };
   const handleCollapse = () => { setExpanded(false); onCollapse?.(); };
 
+  // On mobile (isOpen): always fully expanded. On desktop: hover driven.
+  const isFullyExpanded = expanded || isOpen;
+
   const isActive    = (path) => location.pathname === path;
   const handleNavClick = () => { if (window.innerWidth < 1024) toggleSidebar(); };
   const handleLogoutClick = () => {
@@ -89,8 +92,8 @@ const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar, onExpand, on
         <span style={{
           fontSize: 13.5, fontWeight: active ? 700 : 500,
           color: active ? '#fff' : '#374151',
-          opacity: expanded ? 1 : 0,
-          maxWidth: expanded ? 160 : 0,
+          opacity: isFullyExpanded ? 1 : 0,
+          maxWidth: isFullyExpanded ? 160 : 0,
           transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
           overflow: 'hidden', fontFamily: "'Inter', sans-serif",
           pointerEvents: 'none',
@@ -123,7 +126,7 @@ const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar, onExpand, on
       </span>
       <span style={{
         fontSize: 13.5, fontWeight: 500, color: COLORS.logout,
-        opacity: expanded ? 1 : 0, maxWidth: expanded ? 160 : 0,
+        opacity: isFullyExpanded ? 1 : 0, maxWidth: isFullyExpanded ? 160 : 0,
         transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
         overflow: 'hidden', fontFamily: "'Inter', sans-serif",
         pointerEvents: 'none',
@@ -157,27 +160,26 @@ const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar, onExpand, on
         onMouseLeave={handleCollapse}
         className={`slim-sidebar ${isOpen ? 'is-open' : ''}`}
         style={{
-          width: expanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED,
+          width: isFullyExpanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED,
           background: '#FFFFFF',
           minHeight: '100vh',
           position: 'fixed',
           top: 0, left: 0, bottom: 0,
           display: 'flex', flexDirection: 'column', alignItems: 'stretch',
           paddingTop: 14, paddingBottom: 14,
-          paddingLeft: 10,  /* FIXED — icons never shift */
-          paddingRight: 10, /* FIXED */
-          boxShadow: expanded ? '4px 0 32px rgba(0,0,0,0.12)' : '2px 0 12px rgba(0,0,0,0.06)',
+          paddingLeft: 10, paddingRight: 10,
+          boxShadow: isFullyExpanded ? '4px 0 32px rgba(0,0,0,0.12)' : '2px 0 12px rgba(0,0,0,0.06)',
           borderRight: '1px solid rgba(0,0,0,0.05)',
           zIndex: 45,
           transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease',
           overflowX: 'hidden', overflowY: 'auto',
         }}
       >
-        {/* Logo row — FIXED justifyContent so logo never shakes */}
+        {/* Logo row + mobile close button */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
           marginBottom: 14, padding: '4px 0',
-          justifyContent: 'flex-start', /* FIXED */
+          justifyContent: 'flex-start',
           flexShrink: 0,
         }}>
           <div style={{
@@ -190,26 +192,43 @@ const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar, onExpand, on
             <img src={logo} alt="Logo" style={{ width: 26, height: 26, objectFit: 'contain', borderRadius: 5 }} />
           </div>
           <div style={{
-            opacity: expanded ? 1 : 0, maxWidth: expanded ? 160 : 0,
+            opacity: isFullyExpanded ? 1 : 0, maxWidth: isFullyExpanded ? 200 : 0,
             overflow: 'hidden',
             transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
             whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', flex: 1,
           }}>
-            <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 800, color: '#1A1A2E', lineHeight: 1.2 }}>Shreerama</div>
-            <div style={{ fontSize: 9.5, fontWeight: 600, color: '#E8B84B', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Employee Portal</div>
+            <div>
+              <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 800, color: '#1A1A2E', lineHeight: 1.2 }}>Shreerama</div>
+              <div style={{ fontSize: 9.5, fontWeight: 600, color: '#E8B84B', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Employee Portal</div>
+            </div>
+            {/* Close button — mobile only */}
+            <button
+              onClick={toggleSidebar}
+              className="lg:hidden"
+              style={{
+                background: 'rgba(0,0,0,0.06)', border: 'none',
+                width: 30, height: 30, borderRadius: 8, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginLeft: 'auto', flexShrink: 0,
+              }}
+              aria-label="Close sidebar"
+            >
+              {ICONS.close('#555')}
+            </button>
           </div>
         </div>
 
         <div style={{ height: 1.5, background: 'rgba(0,0,0,0.06)', borderRadius: 2, marginBottom: 10 }} />
 
-        {/* Worker avatar chip — FIXED alignment */}
+        {/* Worker avatar chip */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
           marginBottom: 10, padding: '6px 4px',
-          justifyContent: 'flex-start', /* FIXED */
+          justifyContent: 'flex-start',
           borderRadius: 12,
-          background: expanded ? 'rgba(232,184,75,0.08)' : 'transparent',
-          border: expanded ? '1px solid rgba(232,184,75,0.15)' : '1px solid transparent',
+          background: isFullyExpanded ? 'rgba(232,184,75,0.08)' : 'transparent',
+          border: isFullyExpanded ? '1px solid rgba(232,184,75,0.15)' : '1px solid transparent',
           transition: 'background 0.25s ease, border-color 0.25s ease',
         }}>
           <div style={{
