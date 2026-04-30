@@ -25,6 +25,7 @@ const ICONS = {
   attendance: (c) => <Ico color={c}><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></Ico>,
   logout:     (c) => <Ico color={c}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></Ico>,
   menu:       (c) => <Ico color={c}><path d="M4 6h16M4 12h16M4 18h16"/></Ico>,
+  close:      (c) => <Ico color={c}><path d="M18 6L6 18M6 6l12 12"/></Ico>,
 };
 
 /* ── Avatar helpers ─────────────────────────────────────────────────── */
