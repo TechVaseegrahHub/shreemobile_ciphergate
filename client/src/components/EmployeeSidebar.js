@@ -2,183 +2,265 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.png';
 
-const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar }) => {
+/* ── Colors ────────────────────────────────────────────────────────── */
+const COLORS = {
+  dashboard:  '#4B7FE8',
+  jobs:       '#E8B84B',
+  attendance: '#10B981',
+  logout:     '#E05252',
+};
+
+/* ── Tiny icon helper ───────────────────────────────────────────────── */
+const Ico = ({ children, color, size = 19 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke={color} strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round"
+    style={{ flexShrink: 0 }}>
+    {children}
+  </svg>
+);
+
+const ICONS = {
+  dashboard:  (c) => <Ico color={c}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></Ico>,
+  jobs:       (c) => <Ico color={c}><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></Ico>,
+  attendance: (c) => <Ico color={c}><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></Ico>,
+  logout:     (c) => <Ico color={c}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></Ico>,
+  menu:       (c) => <Ico color={c}><path d="M4 6h16M4 12h16M4 18h16"/></Ico>,
+};
+
+/* ── Avatar helpers ─────────────────────────────────────────────────── */
+const getInitials = (name = '') =>
+  name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'EE';
+
+const SIDEBAR_COLLAPSED = 72;
+const SIDEBAR_EXPANDED  = 230;
+
+/* ══════════════════════════════════════════════════════════════════════
+   EMPLOYEE SIDEBAR
+   ══════════════════════════════════════════════════════════════════════ */
+const EmployeeSidebar = ({ worker, onLogout, isOpen, toggleSidebar, onExpand, onCollapse }) => {
   const location = useLocation();
+  const [expanded, setExpanded]                   = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
+  const handleExpand   = () => { setExpanded(true);  onExpand?.();  };
+  const handleCollapse = () => { setExpanded(false); onCollapse?.(); };
 
+  const isActive    = (path) => location.pathname === path;
+  const handleNavClick = () => { if (window.innerWidth < 1024) toggleSidebar(); };
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
-    // Close sidebar on mobile when logout is clicked
-    if (window.innerWidth < 768) {
-      toggleSidebar();
-    }
+    if (window.innerWidth < 1024) toggleSidebar();
   };
 
-  const confirmLogout = () => {
-    onLogout();
+  const initials = getInitials(worker?.name);
+
+  /* ── Nav row ────────────────────────────────────────────────────── */
+  const NavItem = ({ to, iconKey, label }) => {
+    const active   = isActive(to);
+    const color    = COLORS[iconKey];
+    const iconCol  = active ? '#fff' : color;
+
+    return (
+      <Link
+        to={to}
+        onClick={handleNavClick}
+        title={label}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '6px 8px',           /* FIXED */
+          justifyContent: 'flex-start',  /* FIXED */
+          borderRadius: 13, textDecoration: 'none',
+          background: active ? color : 'transparent',
+          boxShadow: active ? `0 4px 14px ${color}38` : 'none',
+          marginBottom: 3,
+          transition: 'background 0.18s ease, box-shadow 0.18s',
+          overflow: 'hidden', whiteSpace: 'nowrap',
+        }}
+        onMouseEnter={e => { if (!active) e.currentTarget.style.background = `${color}16`; }}
+        onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+      >
+        <span style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+          background: active ? 'rgba(255,255,255,0.18)' : 'transparent',
+        }}>
+          {ICONS[iconKey](iconCol)}
+        </span>
+        <span style={{
+          fontSize: 13.5, fontWeight: active ? 700 : 500,
+          color: active ? '#fff' : '#374151',
+          opacity: expanded ? 1 : 0,
+          maxWidth: expanded ? 160 : 0,
+          transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
+          overflow: 'hidden', fontFamily: "'Inter', sans-serif",
+          pointerEvents: 'none',
+        }}>
+          {label}
+        </span>
+      </Link>
+    );
   };
 
-  const cancelLogout = () => {
-    setShowLogoutConfirm(false);
-  };
-  
-  const handleClickOutside = (e) => {
-    // Close sidebar if clicking outside on mobile
-    if (window.innerWidth < 768 && e.target.closest('.sidebar') === null && e.target.closest('.sidebar-toggle') === null) {
-      toggleSidebar();
-    }
-  };
+  /* ── Logout row ─────────────────────────────────────────────────── */
+  const LogoutRow = () => (
+    <button
+      onClick={handleLogoutClick}
+      title="Logout"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '6px 8px',           /* FIXED */
+        justifyContent: 'flex-start',  /* FIXED */
+        borderRadius: 13, border: 'none', background: 'transparent',
+        cursor: 'pointer', width: '100%',
+        transition: 'background 0.18s ease',
+        overflow: 'hidden', whiteSpace: 'nowrap',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = `${COLORS.logout}14`; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, flexShrink: 0 }}>
+        {ICONS.logout(COLORS.logout)}
+      </span>
+      <span style={{
+        fontSize: 13.5, fontWeight: 500, color: COLORS.logout,
+        opacity: expanded ? 1 : 0, maxWidth: expanded ? 160 : 0,
+        transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
+        overflow: 'hidden', fontFamily: "'Inter', sans-serif",
+        pointerEvents: 'none',
+      }}>
+        Logout
+      </span>
+    </button>
+  );
 
   return (
     <>
-      {/* Mobile menu button - only visible on mobile */}
+      {/* ── Mobile hamburger ─────────────────────────────── */}
       <button
-        className="sidebar-toggle fixed top-4 left-4 z-30 md:hidden bg-slate-800 text-white p-2 rounded-lg shadow-lg"
+        className="mobile-menu-btn sidebar-toggle"
         onClick={toggleSidebar}
+        aria-label="Open menu"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
+        {ICONS.menu('#fff')}
       </button>
-      
-      {/* Sidebar - hidden by default on mobile */}
-      <div 
-        className={`bg-gradient-to-b from-slate-900 to-indigo-900 text-white w-64 min-h-screen fixed left-0 top-0 bottom-0 overflow-y-auto transform transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-auto lg:w-64`}
-      >
-        <div className="p-4 border-b border-slate-700 flex flex-col items-center">
-          <div className="flex justify-center mb-2">
-            <img src={logo} alt="Shreeramanamobiles Logo" className="h-16 w-16 object-contain rounded" />
-          </div>
-          <div className="text-center text-white text-sm">Shreerama<br /><span className="text-blue-400">mobiles</span></div>
-          <p className="text-xs text-slate-400 mt-1">Employee Portal</p>
-          <button 
-            className="lg:hidden text-white p-1 rounded-md hover:bg-slate-700 mt-2"
-            onClick={toggleSidebar}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <div className="p-4 border-b border-slate-700">
-          <div className="flex items-center">
-            <div className="ml-3">
-              <p className="font-medium text-white">{worker?.name}</p>
-              <p className="text-xs text-slate-400">{worker?.role}</p>
-            </div>
-          </div>
-        </div>
-        
-        <nav className="mt-4">
-          <Link
-            to={`/employee/${worker?._id}/dashboard`}
-            className={`flex items-center px-4 py-3 text-sm font-medium transition ${
-              isActive(`/employee/${worker?._id}/dashboard`)
-                ? 'bg-slate-800 text-blue-300 border-l-4 border-blue-500'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-blue-300'
-            }`}
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                toggleSidebar();
-              }
-            }}
-          >
-            <svg className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            Dashboard
-          </Link>
-          
-          {/* My Jobs Button */}
-          <Link
-            to={`/employee/${worker?._id}/jobs`}
-            className="flex items-center px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-blue-300 transition"
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                toggleSidebar();
-              }
-            }}
-          >
-            <svg className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            My Jobs
-          </Link>
-          
-          {/* Attendance Button */}
-          <Link
-            to={`/employee/${worker?._id}/attendance`}
-            className="flex items-center px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-blue-300 transition"
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                toggleSidebar();
-              }
-            }}
-          >
-            <svg className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            Attendance
-          </Link>
-        </nav>
-        
-        <div className="absolute bottom-0 w-full p-4 border-t border-slate-700">
-          <button
-            onClick={handleLogoutClick}
-            className="w-full flex items-center p-3 text-left rounded-lg transition-colors duration-200 hover:bg-slate-800 text-red-400 hover:text-red-300"
-          >
-            <svg className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-          </button>
-        </div>
-      </div>
-      
-      {/* Overlay for mobile - only appears when sidebar is open */}
+
+      {/* ── Mobile overlay ───────────────────────────────── */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden lg:hidden"
-          onClick={handleClickOutside}
-        ></div>
+        <div className="sidebar-overlay lg:hidden" onClick={toggleSidebar} />
       )}
 
-      {/* Logout Confirmation Modal */}
+      {/* ══════════════════════════════════════════════════
+          HOVER-EXPAND RAIL
+          ══════════════════════════════════════════════════ */}
+      <aside
+        onMouseEnter={handleExpand}
+        onMouseLeave={handleCollapse}
+        className={`slim-sidebar ${isOpen ? 'is-open' : ''}`}
+        style={{
+          width: expanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED,
+          background: '#FFFFFF',
+          minHeight: '100vh',
+          position: 'fixed',
+          top: 0, left: 0, bottom: 0,
+          display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+          paddingTop: 14, paddingBottom: 14,
+          paddingLeft: 10,  /* FIXED — icons never shift */
+          paddingRight: 10, /* FIXED */
+          boxShadow: expanded ? '4px 0 32px rgba(0,0,0,0.12)' : '2px 0 12px rgba(0,0,0,0.06)',
+          borderRight: '1px solid rgba(0,0,0,0.05)',
+          zIndex: 45,
+          transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s ease',
+          overflowX: 'hidden', overflowY: 'auto',
+        }}
+      >
+        {/* Logo row — FIXED justifyContent so logo never shakes */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          marginBottom: 14, padding: '4px 0',
+          justifyContent: 'flex-start', /* FIXED */
+          flexShrink: 0,
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'linear-gradient(135deg,#1A1A2E,#2E2E50)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(26,26,46,0.28)',
+            overflow: 'hidden', flexShrink: 0,
+          }}>
+            <img src={logo} alt="Logo" style={{ width: 26, height: 26, objectFit: 'contain', borderRadius: 5 }} />
+          </div>
+          <div style={{
+            opacity: expanded ? 1 : 0, maxWidth: expanded ? 160 : 0,
+            overflow: 'hidden',
+            transition: 'opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4,0,0.2,1)',
+            whiteSpace: 'nowrap',
+          }}>
+            <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 800, color: '#1A1A2E', lineHeight: 1.2 }}>Shreerama</div>
+            <div style={{ fontSize: 9.5, fontWeight: 600, color: '#E8B84B', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Employee Portal</div>
+          </div>
+        </div>
+
+        <div style={{ height: 1.5, background: 'rgba(0,0,0,0.06)', borderRadius: 2, marginBottom: 10 }} />
+
+        {/* Worker avatar chip — FIXED alignment */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          marginBottom: 10, padding: '6px 4px',
+          justifyContent: 'flex-start', /* FIXED */
+          borderRadius: 12,
+          background: expanded ? 'rgba(232,184,75,0.08)' : 'transparent',
+          border: expanded ? '1px solid rgba(232,184,75,0.15)' : '1px solid transparent',
+          transition: 'background 0.25s ease, border-color 0.25s ease',
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'linear-gradient(135deg,#E8B84B,#D4920C)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0,
+            boxShadow: '0 3px 10px rgba(232,184,75,0.3)',
+          }}>
+            {initials}
+          </div>
+          <div style={{
+            opacity: expanded ? 1 : 0, maxWidth: expanded ? 160 : 0,
+            overflow: 'hidden', transition: 'opacity 0.2s ease, max-width 0.25s ease',
+            whiteSpace: 'nowrap',
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>{worker?.name || 'Employee'}</div>
+            <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>{worker?.role || 'Technician'}</div>
+          </div>
+        </div>
+
+        <div style={{ height: 1.5, background: 'rgba(0,0,0,0.06)', borderRadius: 2, marginBottom: 10, width: expanded ? '100%' : 32, marginLeft: expanded ? 0 : 'auto', marginRight: expanded ? 0 : 'auto', transition: 'width 0.25s ease' }} />
+
+        {/* Nav */}
+        <nav style={{ flex: 1 }}>
+          <NavItem to={`/employee/${worker?._id}/dashboard`} iconKey="dashboard" label="Dashboard" />
+          <NavItem to={`/employee/${worker?._id}/jobs`}      iconKey="jobs"       label="My Jobs"   />
+          <NavItem to={`/employee/${worker?._id}/attendance`}iconKey="attendance" label="Attendance"/>
+        </nav>
+
+        {/* Logout */}
+        <div>
+          <div style={{ height: 1.5, background: 'rgba(0,0,0,0.06)', borderRadius: 2, marginBottom: 8, width: expanded ? '100%' : 32, marginLeft: expanded ? 0 : 'auto', marginRight: expanded ? 0 : 'auto', transition: 'width 0.25s ease' }} />
+          <LogoutRow />
+        </div>
+      </aside>
+
+      {/* ── Logout Modal ─────────────────────────────────── */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 text-white rounded-lg shadow-xl w-full max-w-md mx-4 border border-slate-700">
-            <div className="border-b border-slate-700 px-6 py-4">
-              <h3 className="text-lg font-semibold text-white">
-                Confirm Logout
-              </h3>
+        <div className="logout-modal-overlay">
+          <div className="logout-modal">
+            <div className="logout-modal__icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E05252" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+              </svg>
             </div>
-            <div className="px-6 py-4">
-              <div className="mb-6">
-                <p className="text-slate-300">
-                  Are you sure you want to logout?
-                </p>
-              </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={cancelLogout}
-                  className="px-4 py-2 border border-slate-600 rounded-lg text-white hover:bg-slate-700 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmLogout}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
-                >
-                  Logout
-                </button>
-              </div>
+            <h3 className="logout-modal__title">Signing out?</h3>
+            <p className="logout-modal__body">You'll be redirected to the employee login page.</p>
+            <div className="logout-modal__actions">
+              <button className="btn-cancel" onClick={() => setShowLogoutConfirm(false)}>Cancel</button>
+              <button className="btn-danger" onClick={onLogout}>Yes, Logout</button>
             </div>
           </div>
         </div>

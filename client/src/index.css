@@ -1,3 +1,765 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =========================================
+   GOOGLE FONTS
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* =========================================
+   DESIGN TOKENS / CSS CUSTOM PROPERTIES
+   ========================================= */
+:root {
+  /* Background palette */
+  --bg-base: #F2EDE4;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #1A1A2E;
+  --bg-sidebar-hover: #252540;
+  --bg-sidebar-active: #2E2E50;
+
+  /* Accent colors */
+  --accent-yellow: #E8B84B;
+  --accent-yellow-light: #FEF3CD;
+  --accent-red: #E05252;
+  --accent-red-light: #FDEAEA;
+  --accent-blue: #4B7FE8;
+  --accent-blue-light: #EAF0FE;
+  --accent-green: #3DBE7A;
+  --accent-green-light: #E5F9ED;
+  --accent-purple: #8B5CF6;
+  --accent-purple-light: #EDE9FE;
+
+  /* Text */
+  --text-primary: #1A1A2E;
+  --text-secondary: #6B6B8A;
+  --text-muted: #A0A0B8;
+  --text-sidebar: #C8C8E0;
+  --text-sidebar-active: #FFFFFF;
+
+  /* Borders & shadows */
+  --border-light: rgba(0,0,0,0.06);
+  --shadow-card: 0 2px 16px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 8px 32px rgba(0,0,0,0.12);
+  --shadow-sidebar: 4px 0 24px rgba(0,0,0,0.15);
+
+  /* Border radius */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 50px;
+
+  /* Sidebar */
+  --sidebar-width: 260px;
+}
+
+/* =========================================
+   GLOBAL RESET & BASE
+   ========================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================
+   CUSTOM SCROLLBAR
+   ========================================= */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.25);
+}
+
+/* =========================================
+   KEYFRAME ANIMATIONS
+   ========================================= */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* =========================================
+   ANIMATION UTILITY CLASSES
+   ========================================= */
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.35s ease both;
+}
+
+/* Stagger children */
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+
+/* =========================================
+   SKELETON SHIMMER
+   ========================================= */
+.skeleton {
+  background: linear-gradient(90deg, #e8e0d5 25%, #f2ede6 50%, #e8e0d5 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: var(--radius-sm);
+}
+
+/* =========================================
+   PREMIUM SIDEBAR STYLES
+   ========================================= */
+.premium-sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sidebar);
+  z-index: 40;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.premium-sidebar__logo-area {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.premium-sidebar__logo-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.premium-sidebar__brand {
+  line-height: 1.2;
+}
+
+.premium-sidebar__brand-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.02em;
+}
+
+.premium-sidebar__brand-sub {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-yellow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.premium-sidebar__close-btn {
+  margin-left: auto;
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: var(--text-sidebar);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.premium-sidebar__close-btn:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.premium-sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.premium-sidebar__section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  padding: 8px 8px 4px;
+  margin-top: 8px;
+}
+
+.premium-sidebar__nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--text-sidebar);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.premium-sidebar__nav-link:hover {
+  background: var(--bg-sidebar-hover);
+  color: #FFFFFF;
+  transform: translateX(2px);
+}
+
+.premium-sidebar__nav-link.active {
+  background: linear-gradient(135deg, rgba(232,184,75,0.18), rgba(232,184,75,0.06));
+  color: var(--accent-yellow);
+  border-left: 3px solid var(--accent-yellow);
+  padding-left: 9px;
+}
+
+.premium-sidebar__nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.premium-sidebar__nav-link:hover .premium-sidebar__nav-icon,
+.premium-sidebar__nav-link.active .premium-sidebar__nav-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.premium-sidebar__footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.premium-sidebar__logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(224, 82, 82, 0.08);
+  border: 1px solid rgba(224, 82, 82, 0.15);
+  color: #F87171;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.premium-sidebar__logout-btn:hover {
+  background: rgba(224, 82, 82, 0.15);
+  color: #FC8181;
+}
+
+/* =========================================
+   PREMIUM DASHBOARD STYLES
+   ========================================= */
+.premium-dashboard {
+  min-height: 100vh;
+  background: var(--bg-base);
+  padding: 28px 28px 40px;
+  animation: fadeIn 0.3s ease;
+}
+
+.premium-dashboard__header {
+  margin-bottom: 28px;
+}
+
+.premium-dashboard__greeting {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.premium-dashboard__subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 400;
+}
+
+.premium-dashboard__date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
+}
+
+/* Stat Cards */
+.premium-stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 22px 20px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+  transition: all 0.25s ease;
+  animation: fadeInUp 0.4s ease both;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--card-accent, #E8B84B);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.premium-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.premium-stat-card:hover::after {
+  opacity: 1;
+}
+
+.premium-stat-card__icon-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.premium-stat-card__value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.premium-stat-card__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Quick Action Buttons */
+.premium-quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.premium-quick-action:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+  color: var(--text-primary);
+}
+
+.premium-quick-action__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Recent Jobs Table */
+.premium-table-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease both;
+  animation-delay: 0.2s;
+}
+
+.premium-table-card__header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.premium-table-card__title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.premium-table-card__subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 2px 0 0;
+}
+
+.premium-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.premium-table th {
+  background: #FAFAF8;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 12px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.premium-table td {
+  padding: 14px 20px;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(0,0,0,0.035);
+  vertical-align: middle;
+}
+
+.premium-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.premium-table tbody tr:hover {
+  background: #FAFAF7;
+}
+
+.premium-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge--intake    { background: #F1F1F1; color: #555; }
+.status-badge--progress  { background: var(--accent-blue-light); color: var(--accent-blue); }
+.status-badge--done      { background: var(--accent-green-light); color: var(--accent-green); }
+.status-badge--ready     { background: var(--accent-purple-light); color: var(--accent-purple); }
+.status-badge--default   { background: var(--accent-yellow-light); color: #B8830A; }
+
+/* Job ID pill */
+.job-id-pill {
+  font-family: 'Outfit', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: #F2EDE4;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+}
+
+/* Avatar initials */
+.avatar-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* Mobile overlay */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 30;
+  animation: fadeIn 0.2s ease;
+  backdrop-filter: blur(2px);
+}
+
+/* Mobile menu toggle */
+.mobile-menu-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 30;
+  background: var(--bg-sidebar);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mobile-menu-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Logout modal */
+.logout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  animation: fadeIn 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.logout-modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.15);
+  animation: fadeInUp 0.3s ease;
+}
+
+.logout-modal__icon {
+  width: 56px;
+  height: 56px;
+  background: var(--accent-red-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.logout-modal__title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.logout-modal__body {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0 0 28px;
+}
+
+.logout-modal__actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-light);
+  background: white;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #F5F0E8;
+  border-color: rgba(0,0,0,0.1);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent-red);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  background: #D44;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(224, 82, 82, 0.35);
+}
+
+/* Low stock badge */
+.low-stock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  animation: pulse-soft 1.8s infinite;
+  display: inline-block;
+}
+
+/* =========================================
+   SLIM SIDEBAR (icon-only rail)
+   ========================================= */
+.slim-sidebar {
+  overflow-x: visible !important;
+}
+
+/* Hide scrollbar track visually — scroll still works, icons not clipped */
+.slim-sidebar::-webkit-scrollbar         { display: none; }
+.slim-sidebar                            { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Also hide on the inner nav scroll area */
+.slim-sidebar nav::-webkit-scrollbar     { display: none; }
+.slim-sidebar nav                        { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Mobile: hide by default, slide in when open */
+@media (max-width: 1023px) {
+  .slim-sidebar {
+    transform: translateX(-100%);
+  }
+  .slim-sidebar.is-open {
+    transform: translateX(0);
+  }
+  .premium-dashboard {
+    padding: 20px 16px 32px;
+  }
+}
+
+/* Desktop: always visible, no toggle needed */
+@media (min-width: 1024px) {
+  .mobile-menu-btn {
+    display: none !important;
+  }
+  .slim-sidebar {
+    transform: translateX(0) !important;
+  }
+}
+
+/* Legacy premium-sidebar (kept for any remnants) */
+@media (max-width: 1023px) {
+  .premium-sidebar {
+    transform: translateX(-100%);
+  }
+  .premium-sidebar.is-open {
+    transform: translateX(0);
+  }
+}
+@media (min-width: 1024px) {
+  .premium-sidebar {
+    transform: translateX(0) !important;
+  }
+}
