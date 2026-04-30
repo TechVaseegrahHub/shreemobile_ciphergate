@@ -1191,512 +1191,403 @@ const JobIntake = () => {
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="p-4 md:p-8 bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+  /* ── Wizard step state (UI only) ─────────────────────────── */
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [step, setStep] = React.useState(1);
+  const TOTAL_STEPS = 4;
+
+  const STEPS = [
+    { num: 1, label: 'Customer',  icon: '👤' },
+    { num: 2, label: 'Device',    icon: '📱' },
+    { num: 3, label: 'Service',   icon: '🔧' },
+    { num: 4, label: 'Review',    icon: '✅' },
+  ];
+
+  const canNext = () => {
+    if (step === 1) return formData.customerName && formData.customerPhone;
+    if (step === 2) return formData.device_model;
+    if (step === 3) return formData.reported_issue && formData.total_amount !== '';
+    return true;
+  };
+
+  /* ── shared styles (Light Theme) ───────────────────────── */
+  const S = {
+    page: {
+      minHeight: '100vh',
+      backgroundColor: '#F9FAFB',
+      padding: '28px 20px',
+      fontFamily: "'Inter', sans-serif",
+    },
+    card: {
+      backgroundColor: '#FFFFFF',
+      border: '1px solid #E5E7EB',
+      borderRadius: 16,
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+      maxWidth: 800,
+      margin: '0 auto',
+      padding: '32px',
+    },
+    label: {
+      display: 'block',
+      fontSize: 13,
+      fontWeight: 600,
+      color: '#4B5563',
+      marginBottom: 8,
+    },
+    input: {
+      width: '100%',
+      backgroundColor: '#F9FAFB',
+      border: '1px solid #D1D5DB',
+      borderRadius: 8,
+      padding: '10px 14px',
+      color: '#111827',
+      fontSize: 14,
+      outline: 'none',
+      boxSizing: 'border-box',
+      transition: 'border-color 0.15s, box-shadow 0.15s',
+    },
+    select: {
+      width: '100%',
+      backgroundColor: '#F9FAFB',
+      border: '1px solid #D1D5DB',
+      borderRadius: 8,
+      padding: '10px 14px',
+      color: '#111827',
+      fontSize: 14,
+      outline: 'none',
+      boxSizing: 'border-box',
+    },
+    textarea: {
+      width: '100%',
+      backgroundColor: '#F9FAFB',
+      border: '1px solid #D1D5DB',
+      borderRadius: 8,
+      padding: '10px 14px',
+      color: '#111827',
+      fontSize: 14,
+      outline: 'none',
+      boxSizing: 'border-box',
+      resize: 'vertical',
+      minHeight: '80px',
+    },
+    fieldRow: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))',
+      gap: 20,
+      marginBottom: 20,
+    },
+    btnPrimary: {
+      padding: '12px 28px', borderRadius: 8, border: 'none',
+      backgroundColor: '#2563EB',
+      color: '#FFFFFF', fontWeight: 600, fontSize: 14.5,
+      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+      boxShadow: '0 1px 2px rgba(37,99,235,0.1)',
+    },
+    btnSecondary: {
+      padding: '12px 28px', borderRadius: 8,
+      border: '1px solid #D1D5DB',
+      backgroundColor: '#FFFFFF',
+      color: '#374151', fontWeight: 600, fontSize: 14,
+      cursor: 'pointer',
+    },
+    reviewRow: (label, value) => (
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F3F4F6' }}>
+        <span style={{ color: '#6B7280', fontSize: 14 }}>{label}</span>
+        <span style={{ color: '#111827', fontSize: 14, fontWeight: 600, textAlign: 'right', maxWidth: '60%' }}>{value || '—'}</span>
       </div>
-    );
-  }
+    ),
+  };
+
+  const handleInputFocus = (e) => {
+    e.target.style.borderColor = '#3B82F6';
+    e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)';
+  };
+  const handleInputBlur = (e) => {
+    e.target.style.borderColor = '#D1D5DB';
+    e.target.style.boxShadow = 'none';
+  };
+
+  /* ── Loader ────────────────────────────────────────────── */
+  if (loading) return (
+    <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#3B82F6', animation: 'spin 0.8s linear infinite', margin: '0 auto 14px' }} />
+        <p style={{ color: '#6B7280', fontSize: 14, fontWeight: 500 }}>Loading Intake Form…</p>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
-    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
-      <style>
-        {`
-          .hide-spinners::-webkit-outer-spin-button,
-          .hide-spinners::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-          }
-          .hide-spinners {
-            -moz-appearance: textfield;
-          }
-        `}
-      </style>
+    <div style={S.page}>
+      {/* Messages */}
+      {error && <div style={{ maxWidth: 800, margin: '0 auto 16px', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '12px 16px', borderRadius: 8, fontSize: 14 }}>{error}</div>}
+      {success && <div style={{ maxWidth: 800, margin: '0 auto 16px', backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '12px 16px', borderRadius: 8, fontSize: 14 }}>{success}</div>}
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">New Job Intake</h1>
-        <p className="text-gray-600">Create a new repair job</p>
-        {isProcessing && (
-          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center text-blue-600">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span className="font-medium">{processingStatus || 'Processing...'}</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Error and Success messages */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {success}
-        </div>
-      )}
-
-      {/* Form */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Customer Information</h2>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="customerName">
-                  Customer Name *
-                </label>
-                <input
-                  type="text"
-                  id="customerName"
-                  value={formData.customerName}
-                  onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="customerPhone">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="customerPhone"
-                  value={formData.customerPhone}
-                  onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="customerEmail">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="customerEmail"
-                  value={formData.customerEmail}
-                  onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="customerAddress">
-                  Address (City)
-                </label>
-                <input
-                  type="text"
-                  id="customerAddress"
-                  value={formData.customerAddress}
-                  onChange={(e) => setFormData({ ...formData, customerAddress: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="e.g. T.V.MALAI"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="aadharNumber">
-                  Aadhar Number
-                </label>
-                <input
-                  type="text"
-                  id="aadharNumber"
-                  value={formData.aadharNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 12);
-                    setFormData({ ...formData, aadharNumber: value });
-                  }}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="12-digit Aadhar number"
-                />
-                {formData.aadharNumber && formData.aadharNumber.length < 12 && (
-                  <p className="text-red-500 text-xs italic mt-1">Aadhar number must be 12 digits</p>
-                )}
-              </div>
-
-              {/* Customer Photo Capture Section */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Customer Photo
-                </label>
-
-                {photo ? (
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={photo}
-                      alt="Customer"
-                      className="w-24 h-24 object-cover rounded border"
-                    />
-                    <div className="flex space-x-2">
-                      <button
-                        type="button"
-                        onClick={removeCustomerPhoto}
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Remove
-                      </button>
-                    </div>
+      <div style={S.card}>
+        {/* Header / Wizard Progress */}
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827', margin: '0 0 8px 0' }}>New Job Intake</h1>
+          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Create a new repair job ticket</p>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 20, left: 0, right: 0, height: 2, backgroundColor: '#E5E7EB', zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 20, left: 0, height: 2, backgroundColor: '#3B82F6', zIndex: 0, transition: 'width 0.3s', width: `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%` }} />
+            
+            {STEPS.map((s, idx) => {
+              const active = step === s.num;
+              const completed = step > s.num;
+              return (
+                <div key={s.num} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: completed ? 'pointer' : 'default' }} onClick={() => completed && setStep(s.num)}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: active || completed ? '#3B82F6' : '#FFFFFF', border: active || completed ? '2px solid #3B82F6' : '2px solid #E5E7EB', color: active || completed ? '#FFFFFF' : '#9CA3AF', fontWeight: 700, fontSize: 16, transition: 'all 0.3s' }}>
+                    {completed ? '✓' : s.num}
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={openCustomerPhotoCamera}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    📷 Take Customer Photo
-                  </button>
-                )}
-              </div>
-
-              {/* Device Video Capture Section */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Device Video
-                </label>
-
-                {deviceVideo ? (
-                  <div className="flex items-center space-x-4">
-                    <video
-                      src={deviceVideo}
-                      className="w-24 h-24 object-cover rounded border"
-                      controls
-                    />
-                    <div className="flex space-x-2">
-                      <button
-                        type="button"
-                        onClick={removeDeviceVideo}
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={openDeviceVideoCamera}
-                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    🎥 Record Device Video
-                  </button>
-                )}
-              </div>
-
-              {/* Camera Modal */}
-              {showCamera && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-hidden">
-                    <div className="p-4 border-b">
-                      <h3 className="text-lg font-semibold">{cameraMode === 'photo' ? '📷 Take Customer Photo' : '🎥 Record Device Video'}</h3>
-                    </div>
-                    <div className="p-4">
-                      <div className="relative mb-4">
-                        <video
-                          ref={videoRef}
-                          autoPlay
-                          playsInline
-                          muted={isRecording}
-                          className="w-full h-auto max-h-[50vh] object-contain rounded border bg-black"
-                        />
-                        <canvas ref={canvasRef} className="hidden" />
-                        {isRecording && (
-                          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded flex items-center">
-                            <div className="w-3 h-3 bg-white rounded-full mr-2 animate-pulse"></div>
-                            REC {recordingTime}s
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={switchCamera}
-                          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex-1"
-                        >
-                          🔄 {cameraFacingMode === 'user' ? 'Back' : 'Front'} Camera
-                        </button>
-                        {!isRecording ? (
-                          cameraMode === 'photo' ? (
-                            <button
-                              type="button"
-                              onClick={captureCustomerPhoto}
-                              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex-1"
-                            >
-                              📷 Capture
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={startDeviceVideoRecording}
-                              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 flex-1"
-                            >
-                              ⏺️ Start Recording
-                            </button>
-                          )
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={stopDeviceVideoRecording}
-                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex-1"
-                          >
-                            ⏹️ Stop ({recordingTime}s)
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={handleCameraCancel}
-                          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 flex-1"
-                        >
-                          ✕ Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <span style={{ marginTop: 8, fontSize: 12, fontWeight: active ? 700 : 500, color: active ? '#111827' : '#6B7280' }}>
+                    {s.label}
+                  </span>
                 </div>
-              )}
+              );
+            })}
+          </div>
+        </div>
 
-            </div>
+        <form onSubmit={handleSubmit}>
+          {/* STEP 1: Customer */}
+          {step === 1 && (
+            <div style={{ animation: 'fadeIn 0.3s' }}>
+              <h2 style={{ fontSize: 18, color: '#111827', marginBottom: 20, fontWeight: 700 }}>Customer Details</h2>
+              <div style={S.fieldRow}>
+                <div>
+                  <label style={S.label}>Customer Name *</label>
+                  <input type="text" value={formData.customerName} onChange={e => setFormData({ ...formData, customerName: e.target.value })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} required />
+                </div>
+                <div>
+                  <label style={S.label}>Phone Number *</label>
+                  <input type="tel" value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} required />
+                </div>
+              </div>
+              <div style={S.fieldRow}>
+                <div>
+                  <label style={S.label}>Email Address</label>
+                  <input type="email" value={formData.customerEmail} onChange={e => setFormData({ ...formData, customerEmail: e.target.value })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                </div>
+                <div>
+                  <label style={S.label}>City / Address</label>
+                  <input type="text" value={formData.customerAddress} onChange={e => setFormData({ ...formData, customerAddress: e.target.value })} placeholder="e.g. T.V.MALAI" style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                </div>
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <label style={S.label}>Aadhar Number</label>
+                <input type="text" value={formData.aadharNumber} onChange={e => setFormData({ ...formData, aadharNumber: e.target.value.replace(/[^0-9]/g, '').slice(0, 12) })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+              </div>
 
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Device Information</h2>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="device_brand">
-                  Device Brand
-                </label>
-                <input
-                  type="text"
-                  id="device_brand"
-                  value={formData.device_brand}
-                  onChange={(e) => setFormData({ ...formData, device_brand: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="e.g. 1+"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="device_model">
-                  Device Model *
-                </label>
-                <input
-                  type="text"
-                  id="device_model"
-                  value={formData.device_model}
-                  onChange={(e) => setFormData({ ...formData, device_model: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                  placeholder="e.g. NORD CE2"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="imei_number">
-                  IMEI Number
-                </label>
-                <input
-                  type="text"
-                  id="imei_number"
-                  value={formData.imei_number}
-                  onChange={(e) => setFormData({ ...formData, imei_number: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="serial_number">
-                  Serial Number
-                </label>
-                <input
-                  type="text"
-                  id="serial_number"
-                  value={formData.serial_number}
-                  onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="device_condition">
-                  Device Condition
-                </label>
-                <textarea
-                  id="device_condition"
-                  value={formData.device_condition}
-                  onChange={(e) => setFormData({ ...formData, device_condition: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  rows="2"
-                  placeholder="Cosmetic damage, screen cracks, etc."
-                />
+              {/* Camera Trigger */}
+              <div style={{ marginBottom: 20, padding: 16, backgroundColor: '#F9FAFB', borderRadius: 8, border: '1px dashed #D1D5DB' }}>
+                <label style={S.label}>Customer Photo</label>
+                {photo ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <img src={photo} alt="Customer" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #E5E7EB' }} />
+                    <button type="button" onClick={removeCustomerPhoto} style={{ padding: '6px 12px', borderRadius: 6, backgroundColor: '#FEF2F2', color: '#DC2626', border: 'none', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>Remove Photo</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={openCustomerPhotoCamera} style={{ padding: '8px 16px', borderRadius: 6, backgroundColor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>📷 Take Customer Photo</button>
+                )}
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Service Details</h2>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="reported_issue">
-                  Fault / Issue *
-                </label>
-                <textarea
-                  id="reported_issue"
-                  value={formData.reported_issue}
-                  onChange={(e) => setFormData({ ...formData, reported_issue: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  rows="3"
-                  required
-                  placeholder="e.g. DEAD"
-                />
+          {/* STEP 2: Device */}
+          {step === 2 && (
+            <div style={{ animation: 'fadeIn 0.3s' }}>
+              <h2 style={{ fontSize: 18, color: '#111827', marginBottom: 20, fontWeight: 700 }}>Device Information</h2>
+              <div style={S.fieldRow}>
+                <div>
+                  <label style={S.label}>Device Brand</label>
+                  <input type="text" value={formData.device_brand} onChange={e => setFormData({ ...formData, device_brand: e.target.value })} placeholder="e.g. Samsung" style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                </div>
+                <div>
+                  <label style={S.label}>Device Model *</label>
+                  <input type="text" value={formData.device_model} onChange={e => setFormData({ ...formData, device_model: e.target.value })} placeholder="e.g. Galaxy S21" style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} required />
+                </div>
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="repair_type">
-                  Repair Type
-                </label>
-                <select
-                  id="repair_type"
-                  value={formData.repair_type}
-                  onChange={(e) => setFormData({ ...formData, repair_type: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                >
-                  <option value="hardware">Hardware</option>
-                  <option value="software">Software</option>
-                  <option value="diagnostics">Diagnostics</option>
-                </select>
+              <div style={S.fieldRow}>
+                <div>
+                  <label style={S.label}>IMEI Number</label>
+                  <input type="text" value={formData.imei_number} onChange={e => setFormData({ ...formData, imei_number: e.target.value })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                </div>
+                <div>
+                  <label style={S.label}>Serial Number</label>
+                  <input type="text" value={formData.serial_number} onChange={e => setFormData({ ...formData, serial_number: e.target.value })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                </div>
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="urgency_level">
-                  Urgency Level
-                </label>
-                <select
-                  id="urgency_level"
-                  value={formData.urgency_level}
-                  onChange={(e) => setFormData({ ...formData, urgency_level: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                >
-                  <option value="normal">Normal</option>
-                  <option value="express">Express</option>
-                  <option value="urgent">Urgent</option>
-                </select>
+              <div style={{ marginBottom: 20 }}>
+                <label style={S.label}>Device Condition</label>
+                <textarea value={formData.device_condition} onChange={e => setFormData({ ...formData, device_condition: e.target.value })} placeholder="Scratches, screen cracks..." style={S.textarea} onFocus={handleInputFocus} onBlur={handleInputBlur} />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="estimated_delivery_date">
-                  Estimated Delivery Date
-                </label>
-                <input
-                  type="date"
-                  id="estimated_delivery_date"
-                  value={formData.estimated_delivery_date}
-                  onChange={(e) => setFormData({ ...formData, estimated_delivery_date: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
+
+              {/* Video Trigger */}
+              <div style={{ marginBottom: 20, padding: 16, backgroundColor: '#F9FAFB', borderRadius: 8, border: '1px dashed #D1D5DB' }}>
+                <label style={S.label}>Device Video</label>
+                {deviceVideo ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <video src={deviceVideo} controls style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #E5E7EB', backgroundColor: '#000' }} />
+                    <button type="button" onClick={removeDeviceVideo} style={{ padding: '6px 12px', borderRadius: 6, backgroundColor: '#FEF2F2', color: '#DC2626', border: 'none', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>Remove Video</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={openDeviceVideoCamera} style={{ padding: '8px 16px', borderRadius: 6, backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>🎥 Record Device Video</button>
+                )}
               </div>
             </div>
+          )}
 
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Financial Details</h2>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="total_amount">
-                  Service Charge / Total (Rs) *
-                </label>
-                <input
-                  type="number"
-                  id="total_amount"
-                  value={formData.total_amount}
-                  onChange={(e) => setFormData({ ...formData, total_amount: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline hide-spinners"
-                  min="0"
-                  step="0.01"
-                  onWheel={(e) => e.target.blur()}
-                />
+          {/* STEP 3: Service & Finance */}
+          {step === 3 && (
+            <div style={{ animation: 'fadeIn 0.3s' }}>
+              <h2 style={{ fontSize: 18, color: '#111827', marginBottom: 20, fontWeight: 700 }}>Service & Financials</h2>
+              <div style={{ marginBottom: 20 }}>
+                <label style={S.label}>Reported Fault / Issue *</label>
+                <textarea value={formData.reported_issue} onChange={e => setFormData({ ...formData, reported_issue: e.target.value })} placeholder="e.g. Screen broken, not charging" style={S.textarea} onFocus={handleInputFocus} onBlur={handleInputBlur} required />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="advance_payment">
-                  Advance Payment (Rs)
-                </label>
-                <input
-                  type="number"
-                  id="advance_payment"
-                  value={formData.advance_payment}
-                  onChange={(e) => setFormData({ ...formData, advance_payment: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline hide-spinners"
-                  min="0"
-                  step="0.01"
-                  onWheel={(e) => e.target.blur()}
-                />
+              
+              <div style={S.fieldRow}>
+                <div>
+                  <label style={S.label}>Repair Type</label>
+                  <select value={formData.repair_type} onChange={e => setFormData({ ...formData, repair_type: e.target.value })} style={S.select} onFocus={handleInputFocus} onBlur={handleInputBlur}>
+                    <option value="hardware">Hardware</option>
+                    <option value="software">Software</option>
+                    <option value="diagnostics">Diagnostics</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={S.label}>Urgency Level</label>
+                  <select value={formData.urgency_level} onChange={e => setFormData({ ...formData, urgency_level: e.target.value })} style={S.select} onFocus={handleInputFocus} onBlur={handleInputBlur}>
+                    <option value="normal">Normal</option>
+                    <option value="express">Express</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="payment_method">
-                  Payment Method
-                </label>
-                <select
-                  id="payment_method"
-                  value={formData.payment_method}
-                  onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                >
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
-                  <option value="upi">UPI</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                </select>
+
+              <div style={{ height: 1, backgroundColor: '#E5E7EB', margin: '24px 0' }} />
+
+              <div style={S.fieldRow}>
+                <div>
+                  <label style={S.label}>Total Service Charge (₹) *</label>
+                  <input type="number" value={formData.total_amount} onChange={e => setFormData({ ...formData, total_amount: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} min="0" step="1" required />
+                </div>
+                <div>
+                  <label style={S.label}>Advance Payment (₹)</label>
+                  <input type="number" value={formData.advance_payment} onChange={e => setFormData({ ...formData, advance_payment: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} min="0" step="1" />
+                </div>
+              </div>
+
+              <div style={S.fieldRow}>
+                <div>
+                  <label style={S.label}>Payment Method</label>
+                  <select value={formData.payment_method} onChange={e => setFormData({ ...formData, payment_method: e.target.value })} style={S.select} onFocus={handleInputFocus} onBlur={handleInputBlur}>
+                    <option value="cash">Cash</option><option value="card">Card</option><option value="upi">UPI</option><option value="bank_transfer">Bank Transfer</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={S.label}>Delivery Date</label>
+                  <input type="date" value={formData.estimated_delivery_date} onChange={e => setFormData({ ...formData, estimated_delivery_date: e.target.value })} style={S.input} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="mb-4 mt-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="taken_by_worker_id">
-              Taken By (Worker)
-            </label>
-            <select
-              id="taken_by_worker_id"
-              value={formData.taken_by_worker_id}
-              onChange={(e) => setFormData({ ...formData, taken_by_worker_id: e.target.value })}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <option value="">Select Worker (Optional)</option>
-              {workers.map(worker => (
-                <option key={worker._id} value={worker._id}>{worker.name}</option>
-              ))}
-            </select>
-          </div>
+          {/* STEP 4: Review & Submit */}
+          {step === 4 && (
+            <div style={{ animation: 'fadeIn 0.3s' }}>
+              <h2 style={{ fontSize: 18, color: '#111827', marginBottom: 20, fontWeight: 700 }}>Review & Confirm</h2>
+              
+              <div style={{ backgroundColor: '#F9FAFB', borderRadius: 12, padding: 20, marginBottom: 24, border: '1px solid #E5E7EB' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 12 }}>Customer & Device</h3>
+                {S.reviewRow('Name', formData.customerName)}
+                {S.reviewRow('Phone', formData.customerPhone)}
+                {S.reviewRow('Device', `${formData.device_brand} ${formData.device_model}`.trim())}
+                {S.reviewRow('Issue', formData.reported_issue)}
+                
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#374151', margin: '24px 0 12px' }}>Financials & Admin</h3>
+                {S.reviewRow('Total Amount', `₹${formData.total_amount}`)}
+                {S.reviewRow('Advance', `₹${formData.advance_payment || 0}`)}
+                {S.reviewRow('Balance', `₹${Number(formData.total_amount || 0) - Number(formData.advance_payment || 0)}`)}
+                
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #E5E7EB' }}>
+                  <label style={S.label}>Taken By (Worker)</label>
+                  <select value={formData.taken_by_worker_id} onChange={e => setFormData({ ...formData, taken_by_worker_id: e.target.value })} style={{ ...S.select, backgroundColor: '#FFFFFF' }} onFocus={handleInputFocus} onBlur={handleInputBlur}>
+                    <option value="">Admin / Self</option>
+                    {workers.map(w => <option key={w._id} value={w._id}>{w.name}</option>)}
+                  </select>
+                </div>
+                
+                <div style={{ marginTop: 16 }}>
+                  <label style={S.label}>Job Card Number (Bill No)</label>
+                  <input type="text" value={formData.job_card_number} onChange={e => setFormData({ ...formData, job_card_number: e.target.value })} style={{ ...S.input, backgroundColor: '#FFFFFF' }} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                </div>
+              </div>
+            </div>
+          )}
 
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="job_card_number">
-              Job Card Number (Bill No)
-            </label>
-            <input
-              type="text"
-              id="job_card_number"
-              value={formData.job_card_number}
-              onChange={(e) => setFormData({ ...formData, job_card_number: e.target.value })}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
+          {/* Navigation Buttons */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32, paddingTop: 20, borderTop: '1px solid #E5E7EB' }}>
+            {step > 1 ? (
+              <button type="button" onClick={() => setStep(s => s - 1)} style={S.btnSecondary}>← Back</button>
+            ) : <div />}
 
-          <div className="flex items-center justify-between mt-8">
-            <button
-              type="submit"
-              disabled={isProcessing}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              {isProcessing ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  📄 Create Job, Download PDF & Send WhatsApp
-                </>
-              )}
-            </button>
+            {step < TOTAL_STEPS ? (
+              <button type="button" onClick={() => setStep(s => s + 1)} disabled={!canNext()} style={{ ...S.btnPrimary, opacity: canNext() ? 1 : 0.5, backgroundColor: '#3B82F6' }}>
+                Next Step →
+              </button>
+            ) : (
+              <button type="submit" disabled={isProcessing} style={{ ...S.btnPrimary, backgroundColor: '#10B981', boxShadow: '0 4px 6px rgba(16,185,129,0.2)' }}>
+                {isProcessing ? 'Processing...' : '✅ Confirm & Create Job'}
+              </button>
+            )}
           </div>
         </form>
       </div>
+
+      {/* CAMERA MODAL */}
+      {showCamera && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20, backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, width: '100%', maxWidth: 480, overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ padding: 16, borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{cameraMode === 'photo' ? 'Take Photo' : 'Record Video'}</h3>
+              <button onClick={handleCameraCancel} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#6B7280' }}>×</button>
+            </div>
+            <div style={{ padding: 16 }}>
+              <div style={{ position: 'relative', backgroundColor: '#000', borderRadius: 12, overflow: 'hidden', marginBottom: 16, aspectRatio: '4/3' }}>
+                <video ref={videoRef} autoPlay playsInline muted={isRecording} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+                {isRecording && (
+                  <div style={{ position: 'absolute', top: 12, left: 12, backgroundColor: '#EF4444', color: '#FFF', padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 8, height: 8, backgroundColor: '#FFF', borderRadius: '50%', animation: 'pulse 1s infinite' }} /> REC {recordingTime}s
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button type="button" onClick={switchCamera} style={{ flex: 1, padding: 12, borderRadius: 8, backgroundColor: '#F3F4F6', color: '#4B5563', border: 'none', fontWeight: 600, cursor: 'pointer' }}>🔄 Flip</button>
+                {!isRecording ? (
+                  cameraMode === 'photo' ? (
+                    <button type="button" onClick={captureCustomerPhoto} style={{ flex: 2, padding: 12, borderRadius: 8, backgroundColor: '#2563EB', color: '#FFF', border: 'none', fontWeight: 600, cursor: 'pointer' }}>📷 Capture</button>
+                  ) : (
+                    <button type="button" onClick={startDeviceVideoRecording} style={{ flex: 2, padding: 12, borderRadius: 8, backgroundColor: '#EF4444', color: '#FFF', border: 'none', fontWeight: 600, cursor: 'pointer' }}>⏺️ Record</button>
+                  )
+                ) : (
+                  <button type="button" onClick={stopDeviceVideoRecording} style={{ flex: 2, padding: 12, borderRadius: 8, backgroundColor: '#1F2937', color: '#FFF', border: 'none', fontWeight: 600, cursor: 'pointer' }}>⏹️ Stop</button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+      `}</style>
     </div>
   );
 };
