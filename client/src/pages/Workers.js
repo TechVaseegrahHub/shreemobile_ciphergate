@@ -916,88 +916,93 @@ const Workers = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 md:p-8 bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading workers...</div>
+  /* ── styles ─────────────────────────────────────────────── */
+  const S = {
+    page: { minHeight: '100vh', backgroundColor: '#F9FAFB', padding: '28px 24px', fontFamily: "'Inter', sans-serif" },
+    card: (extra = {}) => ({ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', ...extra }),
+    input: { backgroundColor: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: 10, padding: '10px 14px', color: '#111827', fontSize: 14, outline: 'none', width: '100%', boxSizing: 'border-box', transition: 'border-color 0.15s ease, box-shadow 0.15s ease' },
+    label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#4B5563', marginBottom: 6 },
+    th: { padding: '12px 16px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280', textAlign: 'left', borderBottom: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' },
+    td: { padding: '14px 16px', fontSize: 13.5, color: '#374151', borderBottom: '1px solid #E5E7EB', verticalAlign: 'middle' },
+    btnPrimary: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#2563EB', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(37,99,235,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSecondary: { padding: '10px 20px', borderRadius: 8, border: '1px solid #D1D5DB', backgroundColor: '#FFFFFF', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnDanger: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#EF4444', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' },
+  };
+
+  if (loading) return (
+    <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#3B82F6', animation: 'spin 0.8s linear infinite', margin: '0 auto 14px' }} />
+        <p style={{ color: '#6B7280', fontSize: 14, fontWeight: 500 }}>Loading workers…</p>
       </div>
-    );
-  }
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
-    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">Workers Management</h2>
-          <p className="text-gray-600">Manage your repair shop workers</p>
+    <div style={S.page}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 12,
+            background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(59,130,246,0.25)'
+          }}>
+            <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', margin: 0, fontFamily: "'Outfit',sans-serif" }}>
+              Workers Management
+            </h1>
+            <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Manage your repair shop workers</p>
+          </div>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-        >
-          Add New Worker
-        </button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button onClick={() => {}} style={{...S.btnSecondary, opacity: 0, pointerEvents: 'none', display: 'none'}} />
+          <button onClick={openCreateModal} style={S.btnPrimary}>+ Add New Worker</button>
+        </div>
       </div>
 
       {error && !showModal && !showFaceCapture && !showFaceReview && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
+        <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: 12, padding: '12px 16px', fontSize: 14, marginBottom: 16 }}>{error}</div>
       )}
 
       {success && !showModal && !showFaceCapture && !showFaceReview && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {success}
-        </div>
+        <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', borderRadius: 12, padding: '12px 16px', fontSize: 14, marginBottom: 16 }}>{success}</div>
       )}
 
       {/* RFID Modal */}
       {showRFIDModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                RFID Attendance
-              </h3>
-              <button
-                onClick={closeRFIDModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 400, padding: 0, overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F9FAFB' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>RFID Attendance</h3>
+              <button onClick={closeRFIDModal} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6B7280' }}>×</button>
             </div>
-            <div className="px-6 py-4">
+            <div style={{ padding: 24, textAlign: 'center' }}>
               {scanningRFID ? (
-                <div className="text-center">
-                  <div className="mx-auto bg-gray-200 rounded-full p-4 w-24 h-24 flex items-center justify-center mb-4">
-                    <svg className="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <>
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg style={{ width: 40, height: 40, color: '#6B7280' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
                     </svg>
                   </div>
-                  <p className="text-gray-600 mb-4">Scan your RFID card or enter RFID manually</p>
+                  <p style={{ color: '#4B5563', fontSize: 14, marginBottom: 16 }}>Scan your RFID card or enter RFID manually</p>
                   <input
-                    type="text"
-                    value={rfidInput}
-                    onChange={(e) => setRfidInput(e.target.value)}
-                    onKeyPress={handleRFIDScan}
-                    placeholder="Enter RFID"
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none mb-4"
-                    autoFocus
+                    type="text" value={rfidInput} onChange={(e) => setRfidInput(e.target.value)} onKeyPress={handleRFIDScan}
+                    placeholder="Enter RFID" style={{ ...S.input, marginBottom: 16 }} autoFocus
                   />
-                  <button
-                    onClick={manualRFIDSubmit}
-                    disabled={!rfidInput}
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50"
-                  >
+                  <button onClick={manualRFIDSubmit} disabled={!rfidInput} style={{ ...S.btnPrimary, backgroundColor: '#16A34A', width: '100%', opacity: !rfidInput ? 0.5 : 1 }}>
                     Submit RFID
                   </button>
-                </div>
+                </>
               ) : (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Recording attendance...</p>
+                <div style={{ padding: '24px 0' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#16A34A', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+                  <p style={{ color: '#4B5563', fontSize: 14 }}>Recording attendance...</p>
                 </div>
               )}
             </div>
@@ -1007,436 +1012,195 @@ const Workers = () => {
 
       {/* Worker Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-screen overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 600, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F9FAFB' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: '#111827' }}>
                 {isEditing ? 'Edit Worker' : 'Add New Worker'}
               </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6B7280' }}>×</button>
             </div>
-            <form onSubmit={handleSubmit} className="px-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="e.g. John Doe"
-                    required
-                  />
+            
+            <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div>
+                  <label style={S.label}>Full Name *</label>
+                  <input type="text" name="name" value={formData.name} onChange={handleInputChange} style={S.input} placeholder="e.g. John Doe" required />
                 </div>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="e.g. john@example.com"
-                    required
-                  />
+                <div>
+                  <label style={S.label}>Email *</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} style={S.input} placeholder="e.g. john@example.com" required />
                 </div>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {isEditing ? 'New Password (optional)' : 'Password *'}
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder={isEditing ? "Leave blank to keep current password" : "Enter password"}
-                    required={!isEditing}
-                  />
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div>
+                  <label style={S.label}>{isEditing ? 'New Password (optional)' : 'Password *'}</label>
+                  <input type="password" name="password" value={formData.password} onChange={handleInputChange} style={S.input} placeholder={isEditing ? "Leave blank to keep current" : "Enter password"} required={!isEditing} />
                 </div>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Department
-                  </label>
-                  <select
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                  >
+                <div>
+                  <label style={S.label}>Department</label>
+                  <select name="department" value={formData.department} onChange={handleInputChange} style={S.input}>
                     <option value="">Select Department</option>
-                    {departments.map(dept => (
-                      <option key={dept._id} value={dept._id}>{dept.name}</option>
-                    ))}
+                    {departments.map(dept => <option key={dept._id} value={dept._id}>{dept.name}</option>)}
                   </select>
                 </div>
-                
-                {/* Salary Field */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Salary (₹)
-                  </label>
-                  <input
-                    type="number"
-                    name="salary"
-                    value={formData.salary}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none hide-spinner"
-                    placeholder="Enter salary"
-                    onWheel={(e) => e.target.blur()} // Disable scroll wheel
-                    min="0"
-                  />
-                  {/* Hide spinner for number input */}
-                  <style>
-                    {`
-                      .hide-spinner::-webkit-outer-spin-button,
-                      .hide-spinner::-webkit-inner-spin-button {
-                        -webkit-appearance: none;
-                        margin: 0;
-                      }
-                      .hide-spinner {
-                        -moz-appearance: textfield;
-                      }
-                    `}
-                  </style>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div>
+                  <label style={S.label}>Salary (₹)</label>
+                  <input type="number" name="salary" value={formData.salary} onChange={handleInputChange} style={S.input} placeholder="Enter salary" min="0" onWheel={e => e.target.blur()} />
                 </div>
-                
-                {/* RFID Field */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    RFID
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      name="rfid"
-                      value={formData.rfid}
-                      onChange={handleChange}
-                      className="flex-1 border border-gray-300 px-3 py-2 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-100"
-                      placeholder="RFID"
-                      readOnly={isEditing} // Read-only when editing
-                    />
-                    {!isEditing && ( // Only show generate button when creating new worker
-                      <button
-                        type="button"
-                        onClick={() => setFormData({...formData, rfid: generateRFID()})}
-                        className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-r-lg text-gray-700 font-medium transition"
-                      >
-                        Generate
+                <div>
+                  <label style={S.label}>RFID</label>
+                  <div style={{ display: 'flex' }}>
+                    <input type="text" name="rfid" value={formData.rfid} onChange={handleChange} style={{ ...S.input, borderTopRightRadius: !isEditing ? 0 : 10, borderBottomRightRadius: !isEditing ? 0 : 10, backgroundColor: isEditing ? '#F3F4F6' : '#FFFFFF' }} placeholder="RFID" readOnly={isEditing} />
+                    {!isEditing && (
+                      <button type="button" onClick={() => setFormData({...formData, rfid: generateRFID()})} style={{ ...S.btnSecondary, borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: '#F3F4F6', borderLeft: 0, padding: '10px 12px' }}>
+                        Gen
                       </button>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Unique RFID in format: 2 letters + 4 digits (e.g., AB1234)
-                  </p>
-                </div>
-                
-                {/* Batch Selection Section */}
-                <div className="md:col-span-2 mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Select Batch
-                    </label>
-                    <span className="text-xs text-gray-500 italic">
-                      {isEditing ? "Current worker's batch" : "Assign batch to worker"}
-                    </span>
-                  </div>
-                  <select
-                    value={selectedBatch}
-                    onChange={handleBatchChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                  >
-                    <option value="">Select a Batch</option>
-                    {availableBatches.map(batch => (
-                      <option key={batch._id} value={batch._id}>
-                        {batch.name} ({batch.workingTime.from} - {batch.workingTime.to})
-                      </option>
-                    ))}
-                  </select>
-                  
-                  {/* Display selected batch times if any */}
-                  {selectedBatch && (() => {
-                    const batch = availableBatches.find(b => b._id === selectedBatch);
-                    return batch ? (
-                      <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                        <div className="text-sm font-medium text-blue-800">Selected Batch: {batch.name}</div>
-                        <div className="text-xs text-blue-600 mt-1">
-                          <div>Working Hours: {batch.workingTime.from} - {batch.workingTime.to}</div>
-                          {batch.lunchTime?.enabled && (
-                            <div>Lunch: {batch.lunchTime.from} - {batch.lunchTime.to}</div>
-                          )}
-                          {batch.breakTime?.enabled && (
-                            <div>Break: {batch.breakTime.from} - {batch.breakTime.to}</div>
-                          )}
-                        </div>
-                      </div>
-                    ) : null;
-                  })()}
-                </div>
-                
-                {/* Face Capture Section for Multiple Images */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Face Enrollment ({faceImages.length}/4 images)
-                  </label>
-                  
-                  {/* Display captured images */}
-                  {faceImages.length > 0 && (
-                    <div className="mb-4">
-                      <div className="grid grid-cols-2 gap-2">
-                        {faceImages.map((image, index) => (
-                          <div key={index} className="relative">
-                            <img 
-                              src={image} 
-                              alt={`Face ${index + 1}`} 
-                              className="w-full h-24 object-cover rounded border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeFaceImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Capture button - only show if we haven't reached 4 images */}
-                  {faceImages.length < 4 ? (
-                    <button
-                      type="button"
-                      onClick={startFaceCapture}
-                      className="w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 transition"
-                    >
-                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                      </svg>
-                      <span className="mt-2 text-sm text-gray-600">Click to capture face ({4 - faceImages.length} remaining)</span>
-                    </button>
-                  ) : (
-                    <div className="text-center py-2 text-green-600 font-medium">
-                      Maximum of 4 face images captured
-                    </div>
-                  )}
+                  <p style={{ margin: '4px 0 0 0', fontSize: 11, color: '#6B7280' }}>Format: 2 letters + 4 digits (e.g., AB1234)</p>
                 </div>
               </div>
-              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                >
-                  {isEditing ? 'Update Worker' : 'Create Worker'}
-                </button>
+              
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label style={{ ...S.label, marginBottom: 0 }}>Select Batch</label>
+                  <span style={{ fontSize: 11, color: '#6B7280', fontStyle: 'italic' }}>{isEditing ? "Current worker's batch" : "Assign batch"}</span>
+                </div>
+                <select value={selectedBatch} onChange={handleBatchChange} style={S.input}>
+                  <option value="">Select a Batch</option>
+                  {availableBatches.map(batch => (
+                    <option key={batch._id} value={batch._id}>
+                      {batch.name} ({batch.workingTime.from} - {batch.workingTime.to})
+                    </option>
+                  ))}
+                </select>
+                {selectedBatch && (() => {
+                  const batch = availableBatches.find(b => b._id === selectedBatch);
+                  return batch ? (
+                    <div style={{ marginTop: 8, padding: 12, backgroundColor: '#EFF6FF', borderRadius: 8, border: '1px solid #BFDBFE' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1E40AF', marginBottom: 4 }}>Selected Batch: {batch.name}</div>
+                      <div style={{ fontSize: 12, color: '#2563EB', display: 'flex', flexWrap: 'wrap', gap: '0 12px' }}>
+                        <span><strong style={{ fontWeight: 600 }}>Work:</strong> {batch.workingTime.from} - {batch.workingTime.to}</span>
+                        {batch.lunchTime?.enabled && <span><strong style={{ fontWeight: 600 }}>Lunch:</strong> {batch.lunchTime.from} - {batch.lunchTime.to}</span>}
+                        {batch.breakTime?.enabled && <span><strong style={{ fontWeight: 600 }}>Break:</strong> {batch.breakTime.from} - {batch.breakTime.to}</span>}
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+              
+              <div style={{ padding: 16, backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 12 }}>
+                <label style={{ ...S.label, display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Face Enrollment</span>
+                  <span style={{ color: '#2563EB' }}>{faceImages.length}/4 images</span>
+                </label>
+                
+                {faceImages.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: faceImages.length < 4 ? 12 : 0 }}>
+                    {faceImages.map((img, i) => (
+                      <div key={i} style={{ position: 'relative', paddingTop: '100%', borderRadius: 8, overflow: 'hidden', border: '1px solid #E5E7EB' }}>
+                        <img src={img} alt={`Face ${i+1}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => removeFaceImage(i)} style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: '#FFF', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, cursor: 'pointer', padding: 0 }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {faceImages.length < 4 ? (
+                  <button type="button" onClick={startFaceCapture} style={{ width: '100%', padding: 20, border: '2px dashed #D1D5DB', borderRadius: 8, backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#93C5FD'} onMouseLeave={e => e.currentTarget.style.borderColor = '#D1D5DB'}>
+                    <svg style={{ width: 32, height: 32, color: '#9CA3AF', marginBottom: 8 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                    </svg>
+                    <span style={{ fontSize: 13, color: '#4B5563', fontWeight: 500 }}>Click to capture face ({4 - faceImages.length} remaining)</span>
+                  </button>
+                ) : (
+                  <div style={{ textAlign: 'center', fontSize: 13, color: '#16A34A', fontWeight: 600, padding: '8px 0' }}>Maximum of 4 face images captured</div>
+                )}
               </div>
             </form>
+            
+            <div style={{ borderTop: '1px solid #E5E7EB', padding: '16px 24px', backgroundColor: '#F9FAFB', display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button type="button" onClick={closeModal} style={S.btnSecondary}>Cancel</button>
+              <button type="submit" onClick={handleSubmit} style={S.btnPrimary}>{isEditing ? 'Update Worker' : 'Create Worker'}</button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Face Capture Modal - Positioned over everything with higher z-index */}
+      {/* Face Capture Modal */}
       {showFaceCapture && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Capture Face ({faceImages.length}/4)
-              </h3>
-              <button
-                onClick={closeFaceCapture}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 450, overflow: 'hidden' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>Capture Face ({faceImages.length}/4)</h3>
+              <button onClick={closeFaceCapture} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6B7280' }}>×</button>
             </div>
-            <div className="p-6">
+            
+            <div style={{ padding: 24 }}>
               {captureCompleted ? (
-                // Show confirmation screen with all captured images
-                <div className="text-center">
-                  <h4 className="text-lg font-medium mb-4">Confirm Face Images</h4>
-                  <p className="mb-4 text-gray-600">Review the captured images below:</p>
-                  
-                  {/* Display all captured images for review */}
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    {faceImages.map((image, index) => (
-                      <div key={index} className="relative">
-                        <img 
-                          src={image} 
-                          alt={`Captured Face ${index + 1}`} 
-                          className="w-full h-24 object-cover rounded border"
-                        />
-                        <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-                          {index + 1}
-                        </div>
+                <div style={{ textAlign: 'center' }}>
+                  <h4 style={{ fontSize: 16, fontWeight: 600, color: '#111827', margin: '0 0 16px 0' }}>Confirm Face Images</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 }}>
+                    {faceImages.map((img, i) => (
+                      <div key={i} style={{ position: 'relative', paddingTop: '100%', borderRadius: 8, overflow: 'hidden', border: '1px solid #E5E7EB' }}>
+                        <img src={img} alt={`Face ${i}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', bottom: 4, left: 4, backgroundColor: 'rgba(0,0,0,0.6)', color: '#FFF', fontSize: 11, padding: '2px 6px', borderRadius: 4 }}>{i+1}</div>
                       </div>
                     ))}
                   </div>
-                  
-                  <div className="flex justify-center space-x-3">
-                    <button
-                      onClick={closeFaceCapture}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                    >
-                      Retake All
-                    </button>
-                    <button
-                      onClick={confirmFaceImages}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                    >
-                      Confirm Images
-                    </button>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                    <button onClick={closeFaceCapture} style={S.btnSecondary}>Retake All</button>
+                    <button onClick={confirmFaceImages} style={S.btnPrimary}>Confirm Images</button>
                   </div>
                 </div>
               ) : capturing ? (
-                // Show camera capture screen
-                <div className="text-center">
-                  <div className="relative mx-auto mb-4">
-                    <video 
-                      ref={setVideoRef} // Use callback ref instead of direct ref
-                      autoPlay 
-                      playsInline 
-                      className="w-full rounded-lg border-2 border-gray-300 max-h-64"
-                      style={{ display: 'block', minWidth: '300px', minHeight: '200px' }} // Ensure it has a proper size
-                      onLoadedData={() => {
-                        console.log('Video element loaded data');
-                      }}
-                      id="face-capture-video" // Add an ID for direct access
-                    />
-                    <canvas ref={canvasRef} className="hidden" />
-                    {/* Visual feedback for face position */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden', backgroundColor: '#000', marginBottom: 16 }}>
+                    <video ref={setVideoRef} autoPlay playsInline style={{ width: '100%', display: 'block', minHeight: 250 }} id="face-capture-video" />
+                    <canvas ref={canvasRef} style={{ display: 'none' }} />
                     {faceDetected && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div 
-                          className={`rounded-full border-2 ${faceQualityScore >= 70 ? 'border-green-500' : faceQualityScore >= 50 ? 'border-yellow-500' : 'border-red-500'}`}
-                          style={{
-                            width: `${Math.min(80, Math.max(40, faceQualityScore * 0.6))}%`,
-                            height: `${Math.min(80, Math.max(40, faceQualityScore * 0.6))}%`,
-                            maxWidth: '250px',
-                            maxHeight: '250px'
-                          }}
-                        ></div>
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                        <div style={{ width: `${Math.min(80, Math.max(40, faceQualityScore * 0.6))}%`, height: `${Math.min(80, Math.max(40, faceQualityScore * 0.6))}%`, maxWidth: 250, maxHeight: 250, borderRadius: '50%', border: `3px solid ${faceQualityScore >= 70 ? '#22C55E' : faceQualityScore >= 50 ? '#EAB308' : '#EF4444'}` }} />
                       </div>
                     )}
                   </div>
                   
-                  {/* Face detection status */}
-                  <div className="mb-4">
-                    <p className={`font-medium ${faceQualityScore >= 70 ? 'text-green-600' : faceQualityScore >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                  <div style={{ marginBottom: 20 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: faceQualityScore >= 70 ? '#16A34A' : faceQualityScore >= 50 ? '#CA8A04' : '#DC2626', margin: '0 0 8px 0' }}>
                       {faceDetectionStatus || 'Initializing face detection...'}
                     </p>
                     {faceDetected && (
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
-                            className={`h-2.5 rounded-full ${faceQualityScore >= 70 ? 'bg-green-600' : faceQualityScore >= 50 ? 'bg-yellow-500' : 'bg-red-600'}`}
-                            style={{ width: `${faceQualityScore}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Face Quality: {faceQualityScore}%</p>
+                      <div style={{ width: '100%', height: 6, backgroundColor: '#E5E7EB', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${faceQualityScore}%`, backgroundColor: faceQualityScore >= 70 ? '#16A34A' : faceQualityScore >= 50 ? '#EAB308' : '#DC2626', transition: 'width 0.2s' }} />
                       </div>
                     )}
                   </div>
                   
-                  <button
-                    onClick={captureFace}
-                    disabled={!capturing || faceQualityScore < 60}
-                    className={`px-4 py-2 rounded-lg font-semibold transition ${faceQualityScore >= 60 ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                  >
+                  <button onClick={captureFace} disabled={!capturing || faceQualityScore < 60} style={{ ...S.btnPrimary, width: '100%', padding: '14px', fontSize: 15, opacity: (!capturing || faceQualityScore < 60) ? 0.5 : 1 }}>
                     Capture Face {faceImages.length + 1}/4
                   </button>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Captured: {faceImages.length} of 4 images
-                  </p>
+                  <p style={{ fontSize: 12, color: '#6B7280', marginTop: 12, marginBottom: 0 }}>Captured: {faceImages.length} of 4 images</p>
                 </div>
               ) : (
-                // Show loading/waiting state
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Preparing camera...</p>
-                  {/* Add a manual trigger button for camera access */}
-                  <button
-                    onClick={() => {
-                      // Try to access camera manually
-                      console.log('Manual camera access requested. Current videoRef:', videoRef.current);
-                      
-                      // First check if ref is available
-                      let videoElement = videoRef.current;
-                      
-                      // If not, try to find it directly in the DOM
-                      if (!videoElement) {
-                        console.log('Video ref not available, trying to find in DOM...');
-                        videoElement = document.getElementById('face-capture-video');
-                        if (videoElement) {
-                          console.log('Found video element in DOM:', videoElement);
-                          // Update the ref
-                          videoRef.current = videoElement;
-                        }
-                      }
-                      
-                      if (!videoElement) {
-                        // Try to force the ref to be set by re-rendering
-                        console.error('Video element not available for manual access');
-                        setError('Camera element not available. Please wait a moment and try again.');
-                        return;
-                      }
-                      
-                      const constraints = { video: { facingMode: 'user' } };
-                      navigator.mediaDevices.getUserMedia(constraints)
-                        .then(stream => {
-                          videoElement.srcObject = stream;
-                          setCapturing(true);
-                        })
-                        .catch(err => {
-                          console.error('Manual camera access failed:', err);
-                          let errorMessage = 'Could not access camera. ';
-                          if (err.name === 'NotAllowedError') {
-                            errorMessage += 'Please grant camera permission when prompted.';
-                          } else {
-                            errorMessage += 'Please ensure you have given permission and that your camera is not in use.';
-                          }
-                          setError(errorMessage);
-                        });
-                    }}
-                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                  >
-                    Request Camera Access
-                  </button>
-                  <button
-                    onClick={closeFaceCapture}
-                    className="mt-4 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 text-sm"
-                  >
-                    Cancel
-                  </button>
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#2563EB', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+                  <p style={{ color: '#4B5563', fontSize: 14, marginBottom: 24 }}>Preparing camera...</p>
+                  <button onClick={() => {
+                    let videoElement = videoRef.current || document.getElementById('face-capture-video');
+                    if(videoElement) {
+                      navigator.mediaDevices.getUserMedia({video: {facingMode:'user'}}).then(stream => { videoElement.srcObject = stream; setCapturing(true); }).catch(e => setError('Camera access failed.'));
+                    }
+                  }} style={S.btnPrimary}>Request Camera Access</button>
+                  <div style={{ marginTop: 12 }}>
+                    <button onClick={closeFaceCapture} style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                  </div>
                 </div>
               )}
-
             </div>
           </div>
         </div>
@@ -1444,195 +1208,107 @@ const Workers = () => {
 
       {/* Face Review Modal */}
       {showFaceReview && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Face Enrollment for {reviewWorker?.name}
-              </h3>
-              <button
-                onClick={closeFaceReview}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 400, overflow: 'hidden' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F9FAFB' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>Face Enrollment: {reviewWorker?.name}</h3>
+              <button onClick={closeFaceReview} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6B7280' }}>×</button>
             </div>
-            <div className="p-6">
+            
+            <div style={{ padding: 24 }}>
               {reviewFaceImages.length > 0 ? (
-                <div>
-                  <p className="mb-4 text-gray-600">Review the enrolled face images below:</p>
-                  
-                  {/* Display all enrolled images */}
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    {reviewFaceImages.map((image, index) => (
-                      <div key={index} className="relative">
-                        <img 
-                          src={image} 
-                          alt={`Enrolled Face ${index + 1}`} 
-                          className="w-full h-24 object-cover rounded border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeReviewFaceImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                        >
-                          ×
-                        </button>
+                <>
+                  <p style={{ fontSize: 13, color: '#4B5563', marginBottom: 16, marginTop: 0 }}>Review enrolled face images:</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
+                    {reviewFaceImages.map((img, i) => (
+                      <div key={i} style={{ position: 'relative', paddingTop: '100%', borderRadius: 8, overflow: 'hidden', border: '1px solid #E5E7EB' }}>
+                        <img src={img} alt={`Face ${i}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button onClick={() => removeReviewFaceImage(i)} style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%', backgroundColor: '#EF4444', color: '#FFF', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>×</button>
                       </div>
                     ))}
                   </div>
-                  
-                  {/* Add more images if less than 4 */}
                   {reviewFaceImages.length < 4 && (
-                    <button
-                      onClick={addReviewFaceImage}
-                      className="w-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition mb-6"
-                    >
-                      <svg className="w-6 h-6 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                      </svg>
-                      <span className="text-gray-600">Add More Images ({4 - reviewFaceImages.length} remaining)</span>
+                    <button onClick={addReviewFaceImage} style={{ width: '100%', padding: 12, border: '2px dashed #D1D5DB', borderRadius: 8, backgroundColor: '#FFFFFF', color: '#4B5563', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', marginBottom: 24 }}>
+                      <span>+ Add More Images ({4 - reviewFaceImages.length} remaining)</span>
                     </button>
                   )}
-                </div>
+                </>
               ) : (
-                <div className="text-center py-8">
-                  <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                  </svg>
-                  <p className="text-gray-600 mb-4">No face images enrolled for this worker</p>
-                  <button
-                    onClick={addReviewFaceImage}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                  >
-                    Enroll Face Images
-                  </button>
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                  <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg style={{ width: 32, height: 32, color: '#9CA3AF' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                  </div>
+                  <p style={{ color: '#4B5563', fontSize: 14, marginBottom: 20 }}>No face images enrolled for this worker.</p>
+                  <button onClick={addReviewFaceImage} style={S.btnPrimary}>Enroll Face Images</button>
                 </div>
               )}
               
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={closeFaceReview}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                {reviewFaceImages.length > 0 && (
-                  <button
-                    onClick={saveFaceReview}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                  >
-                    Save Changes
-                  </button>
-                )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: reviewFaceImages.length > 0 ? 0 : 24 }}>
+                <button onClick={closeFaceReview} style={S.btnSecondary}>Cancel</button>
+                {reviewFaceImages.length > 0 && <button onClick={saveFaceReview} style={S.btnPrimary}>Save Changes</button>}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded shadow overflow-hidden">
-        <div className="border-b border-gray-200 p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h3 className="text-lg font-semibold">
-            Workers List ({workers.length})
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => exportWorkers(api, 'pdf')}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition text-sm"
-            >
-              Export PDF
-            </button>
-            <button
-              onClick={() => exportWorkers(api, 'excel')}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition text-sm"
-            >
-              Export Excel
-            </button>
+      {/* Main List Table */}
+      <div style={S.card({ overflow: 'hidden' })}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F9FAFB', flexWrap: 'wrap', gap: 16 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>Workers List ({workers.length})</h3>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button onClick={() => exportWorkers(api, 'pdf')} style={{ ...S.btnDanger, backgroundColor: '#EF4444' }}>Export PDF</button>
+            <button onClick={() => exportWorkers(api, 'excel')} style={{ ...S.btnPrimary, backgroundColor: '#10B981' }}>Export Excel</button>
           </div>
         </div>
+        
         {workers.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No workers found. Click "Add New Worker" to add one.
+          <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.5 }}>👥</div>
+            <p style={{ color: '#6B7280', fontSize: 15, fontWeight: 500 }}>No workers found. Click "+ Add New Worker" to add one.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary (₹)</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RFID</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th style={S.th}>Name</th>
+                  <th style={S.th}>Email</th>
+                  <th style={S.th}>Salary (₹)</th>
+                  <th style={S.th}>Department</th>
+                  <th style={S.th}>RFID</th>
+                  <th style={S.th}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {workers.map((worker) => (
-
-                  <tr key={worker._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{worker.name}</div>
+              <tbody style={{ backgroundColor: '#FFFFFF' }}>
+                {workers.map(worker => (
+                  <tr key={worker._id} style={{ transition: 'background-color 0.15s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F9FAFB'} onMouseLeave={e => e.currentTarget.style.backgroundColor = '#FFFFFF'}>
+                    <td style={{ ...S.td, fontWeight: 600, color: '#111827' }}>{worker.name}</td>
+                    <td style={S.td}>{worker.email}</td>
+                    <td style={{ ...S.td, fontWeight: 500 }}>{worker.salary && !isNaN(worker.salary) ? `₹${worker.salary}` : '—'}</td>
+                    <td style={S.td}>
+                      {worker.department ? <span style={{ padding: '4px 10px', borderRadius: 20, backgroundColor: '#F3F4F6', fontSize: 12, fontWeight: 500 }}>{worker.department.name}</span> : '—'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {worker.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {worker.salary && !isNaN(worker.salary) ? `₹${worker.salary}` : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {worker.department ? worker.department.name : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {worker.rfid || 'Not assigned'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center">
-                      {/* Face Enrollment Status Indicator */}
-                      <button
-                        onClick={() => openFaceReview(worker)}
-                        className="mr-3 text-gray-500 hover:text-gray-700"
-                      >
-                        {worker.faceData && worker.faceData.length > 0 ? (
-                          // Camera icon with tick for enrolled workers
-                          <div className="relative">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            <svg className="w-3 h-3 text-green-500 absolute -bottom-1 -right-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
+                    <td style={{ ...S.td, fontFamily: 'monospace', fontSize: 12, color: worker.rfid ? '#4B5563' : '#9CA3AF' }}>{worker.rfid || 'Not assigned'}</td>
+                    <td style={S.td}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <button onClick={() => openFaceReview(worker)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }} title="Face Enrollment">
+                          <div style={{ position: 'relative' }}>
+                            <svg style={{ width: 20, height: 20, color: '#6B7280' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                            {(worker.faceData && worker.faceData.length > 0) ? (
+                              <div style={{ position: 'absolute', bottom: -2, right: -4, backgroundColor: '#FFF', borderRadius: '50%', padding: 1 }}>
+                                <svg style={{ width: 12, height: 12, color: '#10B981' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                              </div>
+                            ) : (
+                              <div style={{ position: 'absolute', bottom: -2, right: -4, backgroundColor: '#FFF', borderRadius: '50%', padding: 1 }}>
+                                <svg style={{ width: 12, height: 12, color: '#EF4444' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                              </div>
+                            )}
                           </div>
-                        ) : (
-                          // Camera icon with cross for non-enrolled workers
-                          <div className="relative">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            <svg className="w-3 h-3 text-red-500 absolute -bottom-1 -right-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                          </div>
-                        )}
-                      </button>
-                      
-                      <button
-                        onClick={() => handleEdit(worker)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(worker._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                        </button>
+                        <button onClick={() => handleEdit(worker)} style={{ background: 'none', border: 'none', color: '#2563EB', fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: 0 }}>Edit</button>
+                        <button onClick={() => handleDelete(worker._id)} style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: 0 }}>Delete</button>
+                      </div>
                     </td>
                   </tr>
                 ))}

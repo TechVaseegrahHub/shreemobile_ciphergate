@@ -282,160 +282,133 @@ const Holidays = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 md:p-8 bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading holidays...</div>
+  /* ── styles ─────────────────────────────────────────────── */
+  const S = {
+    page: { minHeight: '100vh', backgroundColor: '#F9FAFB', padding: '28px 24px', fontFamily: "'Inter', sans-serif" },
+    card: (extra = {}) => ({ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', ...extra }),
+    input: { backgroundColor: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: 10, padding: '10px 14px', color: '#111827', fontSize: 14, outline: 'none', width: '100%', boxSizing: 'border-box', transition: 'border-color 0.15s ease, box-shadow 0.15s ease' },
+    label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#4B5563', marginBottom: 6 },
+    th: { padding: '12px 16px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280', textAlign: 'left', borderBottom: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' },
+    td: { padding: '14px 16px', fontSize: 13.5, color: '#374151', borderBottom: '1px solid #E5E7EB', verticalAlign: 'middle' },
+    btnPrimary: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#2563EB', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(37,99,235,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSecondary: { padding: '10px 20px', borderRadius: 8, border: '1px solid #D1D5DB', backgroundColor: '#FFFFFF', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnDanger: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#EF4444', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' },
+  };
+
+  if (loading) return (
+    <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#3B82F6', animation: 'spin 0.8s linear infinite', margin: '0 auto 14px' }} />
+        <p style={{ color: '#6B7280', fontSize: 14, fontWeight: 500 }}>Loading holidays…</p>
       </div>
-    );
-  }
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   const filteredHolidays = applyFilters();
 
   return (
-    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">Holiday Management</h2>
-          <p className="text-gray-600">Manage company holidays</p>
+    <div style={S.page}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 12,
+            background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(59,130,246,0.25)'
+          }}>
+            <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', margin: 0, fontFamily: "'Outfit',sans-serif" }}>
+              Holiday Management
+            </h1>
+            <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Manage company holidays</p>
+          </div>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-        >
-          Add Holiday
-        </button>
+        <button onClick={openCreateModal} style={S.btnPrimary}>Add Holiday</button>
       </div>
 
       {error && !showModal && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
+        <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: 12, padding: '12px 16px', fontSize: 14, marginBottom: 16 }}>{error}</div>
       )}
 
       {success && !showModal && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {success}
-        </div>
+        <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', borderRadius: 12, padding: '12px 16px', fontSize: 14, marginBottom: 16 }}>{success}</div>
       )}
 
       {/* Filters Section */}
-      <div className="bg-white rounded-lg shadow mb-6">
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold">Filters</h3>
+      <div style={{ ...S.card({ marginBottom: 24 }) }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB' }}>
+          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#111827' }}>Filters</h3>
         </div>
-        <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+        <div style={{ padding: 20 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
+            <div style={{ flex: '1 1 200px' }}>
+              <label style={S.label}>Start Date</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={S.input} />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+            <div style={{ flex: '1 1 200px' }}>
+              <label style={S.label}>End Date</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={S.input} />
             </div>
-            <div className="flex items-end">
-              <button
-                onClick={applyFilters}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-              >
-                Apply Range
-              </button>
-            </div>
-            <div className="flex items-end space-x-2">
-              <button
-                onClick={() => setShowUpcomingOnly(!showUpcomingOnly)}
-                className={`px-4 py-2 rounded-lg font-semibold transition ${
-                  showUpcomingOnly 
-                    ? 'bg-green-600 text-white hover:bg-green-700' 
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <button onClick={applyFilters} style={S.btnPrimary}>Apply Range</button>
+              <button 
+                onClick={() => setShowUpcomingOnly(!showUpcomingOnly)} 
+                style={{ ...S.btnSecondary, backgroundColor: showUpcomingOnly ? '#D1FAE5' : '#FFFFFF', borderColor: showUpcomingOnly ? '#A7F3D0' : '#D1D5DB', color: showUpcomingOnly ? '#065F46' : '#374151' }}
               >
                 {showUpcomingOnly ? 'Showing Upcoming' : 'Show Upcoming'}
               </button>
-              <button
-                onClick={clearFilters}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition"
-              >
-                Clear Filters
-              </button>
+              <button onClick={clearFilters} style={S.btnSecondary}>Clear Filters</button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Holidays List */}
-      <div className="bg-white rounded shadow overflow-hidden">
-        <div className="border-b border-gray-200">
-          <h3 className="p-4 text-lg font-semibold">
-            Holidays List ({filteredHolidays.length})
-          </h3>
+      <div style={S.card()}>
+        <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px' }}>
+          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#111827' }}>Holidays List ({filteredHolidays.length})</h3>
         </div>
         {filteredHolidays.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div style={{ padding: 40, textAlign: 'center', color: '#6B7280', fontSize: 14 }}>
             No holidays found. Click "Add Holiday" to add one.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applies To</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th style={S.th}>Name</th>
+                  <th style={S.th}>Date</th>
+                  <th style={S.th}>Description</th>
+                  <th style={S.th}>Applies To</th>
+                  <th style={S.th}>Status</th>
+                  <th style={S.th}>Created</th>
+                  <th style={S.th}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {filteredHolidays.map((holiday) => (
-                  <tr key={holiday._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{holiday.name}</div>
+                  <tr key={holiday._id} style={{ transition: 'background-color 0.15s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F9FAFB'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                    <td style={S.td}>
+                      <div style={{ fontWeight: 600, color: '#111827' }}>{holiday.name}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDateForDisplay(holiday.date)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                      {holiday.description}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {getAppliesToText(holiday)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(holiday.date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(holiday.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => openEditModal(holiday)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(holiday._id)}
+                    <td style={{ ...S.td, color: '#4B5563' }}>{formatDateForDisplay(holiday.date)}</td>
+                    <td style={{ ...S.td, color: '#6B7280', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{holiday.description}</td>
+                    <td style={{ ...S.td, color: '#4B5563' }}>{getAppliesToText(holiday)}</td>
+                    <td style={S.td}>{getStatusBadge(holiday.date)}</td>
+                    <td style={{ ...S.td, color: '#9CA3AF', fontSize: 12 }}>{new Date(holiday.createdAt).toLocaleDateString()}</td>
+                    <td style={S.td}>
+                      <button onClick={() => openEditModal(holiday)} style={{ background: 'none', border: 'none', color: '#2563EB', fontWeight: 600, fontSize: 13, cursor: 'pointer', marginRight: 12 }}>Edit</button>
+                      <button 
+                        onClick={() => handleDelete(holiday._id)} 
                         disabled={isPastHoliday(holiday.date)}
-                        className={`${
-                          isPastHoliday(holiday.date) 
-                            ? 'text-gray-400 cursor-not-allowed' 
-                            : 'text-red-600 hover:text-red-900'
-                        }`}
                         title={isPastHoliday(holiday.date) ? 'Cannot delete past holidays' : ''}
+                        style={{ background: 'none', border: 'none', color: isPastHoliday(holiday.date) ? '#9CA3AF' : '#EF4444', fontWeight: 600, fontSize: 13, cursor: isPastHoliday(holiday.date) ? 'not-allowed' : 'pointer' }}
                       >
                         Delete
                       </button>
@@ -450,159 +423,76 @@ const Holidays = () => {
 
       {/* Holiday Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-screen overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {isEditing ? 'Edit Holiday' : 'Add New Holiday'}
-              </h3>
-              <button
-                onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 650, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>{isEditing ? 'Edit Holiday' : 'Add New Holiday'}</h3>
+              <button onClick={closeModal} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6B7280' }}>×</button>
             </div>
-            <form onSubmit={handleSubmit} className="px-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Holiday Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="e.g. New Year's Day"
-                    required
-                  />
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1 }}>
+              <div style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+                  <div style={{ flex: '1 1 calc(50% - 8px)' }}>
+                    <label style={S.label}>Holiday Name *</label>
+                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g. New Year's Day" style={S.input} required />
+                  </div>
+                  <div style={{ flex: '1 1 calc(50% - 8px)' }}>
+                    <label style={S.label}>Date *</label>
+                    <input type="date" name="date" value={formData.date} onChange={handleInputChange} style={S.input} required />
+                  </div>
                 </div>
                 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                    required
-                  />
+                <div style={{ marginBottom: 16 }}>
+                  <label style={S.label}>Description / Reason</label>
+                  <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" placeholder="Describe the holiday..." style={{ ...S.input, resize: 'vertical' }}></textarea>
                 </div>
                 
-                <div className="md:col-span-2 mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description / Reason
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="Describe the holiday..."
-                  ></textarea>
-                </div>
-                
-                <div className="md:col-span-2 mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Applies To *
-                  </label>
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        id="appliesToAll"
-                        name="appliesTo"
-                        value="all"
-                        checked={formData.appliesTo === 'all'}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <label htmlFor="appliesToAll" className="ml-2 block text-sm text-gray-700">
-                        All Employees
-                      </label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        id="appliesToSpecific"
-                        name="appliesTo"
-                        value="specific"
-                        checked={formData.appliesTo === 'specific'}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <label htmlFor="appliesToSpecific" className="ml-2 block text-sm text-gray-700">
-                        Specific Employees
-                      </label>
-                    </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={S.label}>Applies To *</label>
+                  <div style={{ display: 'flex', gap: 20 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#374151', cursor: 'pointer' }}>
+                      <input type="radio" name="appliesTo" value="all" checked={formData.appliesTo === 'all'} onChange={handleInputChange} style={{ cursor: 'pointer' }} />
+                      All Employees
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#374151', cursor: 'pointer' }}>
+                      <input type="radio" name="appliesTo" value="specific" checked={formData.appliesTo === 'specific'} onChange={handleInputChange} style={{ cursor: 'pointer' }} />
+                      Specific Employees
+                    </label>
                   </div>
                 </div>
                 
                 {formData.appliesTo === 'specific' && (
-                  <div className="md:col-span-2 mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Employees
-                    </label>
-                    <div className="border border-gray-300 rounded-lg p-4 max-h-60 overflow-y-auto">
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={S.label}>Select Employees</label>
+                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, padding: 16, maxHeight: 240, overflowY: 'auto', backgroundColor: '#F9FAFB' }}>
                       {workers.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">No workers available</p>
+                        <p style={{ textAlign: 'center', color: '#6B7280', fontSize: 14, margin: 0 }}>No workers available</p>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
                           {workers.map((worker) => (
-                            <div key={worker._id} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                id={`worker-${worker._id}`}
-                                checked={selectedEmployees.includes(worker._id)}
-                                onChange={() => handleEmployeeToggle(worker._id)}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                              />
-                              <label htmlFor={`worker-${worker._id}`} className="ml-2 block text-sm text-gray-700">
-                                {worker.name} {/* Removed email display */}
-                              </label>
-                            </div>
+                            <label key={worker._id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#374151', cursor: 'pointer', padding: '6px 8px', borderRadius: 6, backgroundColor: '#FFF', border: '1px solid #E5E7EB' }}>
+                              <input type="checkbox" checked={selectedEmployees.includes(worker._id)} onChange={() => handleEmployeeToggle(worker._id)} style={{ cursor: 'pointer' }} />
+                              {worker.name}
+                            </label>
                           ))}
                         </div>
                       )}
                     </div>
                   </div>
                 )}
+                
+                {error && (
+                  <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginTop: 16 }}>{error}</div>
+                )}
+                
+                {success && (
+                  <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginTop: 16 }}>{success}</div>
+                )}
               </div>
               
-              {error && (
-                <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                  {error}
-                </div>
-              )}
-              
-              {success && (
-                <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                  {success}
-                </div>
-              )}
-              
-              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                >
-                  {isEditing ? 'Update Holiday' : 'Create Holiday'}
-                </button>
+              <div style={{ borderTop: '1px solid #E5E7EB', padding: '16px 20px', backgroundColor: '#F9FAFB', display: 'flex', justifyContent: 'flex-end', gap: 12, borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+                <button type="button" onClick={closeModal} style={S.btnSecondary}>Cancel</button>
+                <button type="submit" style={S.btnPrimary}>{isEditing ? 'Update Holiday' : 'Create Holiday'}</button>
               </div>
             </form>
           </div>

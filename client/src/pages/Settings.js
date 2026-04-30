@@ -243,351 +243,290 @@ const Settings = () => {
     setBatchToDelete(null);
   };
 
+  /* ── styles ─────────────────────────────────────────────── */
+  const S = {
+    page: { minHeight: '100vh', backgroundColor: '#F9FAFB', padding: '28px 24px', fontFamily: "'Inter', sans-serif" },
+    card: (extra = {}) => ({ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', padding: 24, marginBottom: 24, ...extra }),
+    input: { backgroundColor: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: 10, padding: '10px 14px', color: '#111827', fontSize: 14, outline: 'none', width: '100%', boxSizing: 'border-box', transition: 'border-color 0.15s ease, box-shadow 0.15s ease' },
+    label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#4B5563', marginBottom: 6 },
+    th: { padding: '12px 16px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280', textAlign: 'left', borderBottom: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' },
+    td: { padding: '14px 16px', fontSize: 13.5, color: '#374151', borderBottom: '1px solid #E5E7EB', verticalAlign: 'middle' },
+    btnPrimary: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#2563EB', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(37,99,235,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSecondary: { padding: '10px 20px', borderRadius: 8, border: '1px solid #D1D5DB', backgroundColor: '#FFFFFF', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnDanger: { padding: '8px 16px', borderRadius: 8, border: 'none', backgroundColor: '#EF4444', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSuccess: { padding: '8px 16px', borderRadius: 8, border: 'none', backgroundColor: '#10B981', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 },
+    modalContent: { backgroundColor: '#FFFFFF', borderRadius: 16, boxShadow: '0 4px 6px rgba(0,0,0,0.1)', width: '100%', maxWidth: 500, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    modalHeader: { borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+    modalTitle: { fontSize: 18, fontWeight: 700, margin: 0, color: '#111827' },
+    modalBody: { padding: '20px 24px', overflowY: 'auto', maxHeight: '70vh' },
+    modalFooter: { borderTop: '1px solid #E5E7EB', padding: '16px 24px', backgroundColor: '#F9FAFB', display: 'flex', justifyContent: 'flex-end', gap: 12 },
+  };
+
   return (
-    <div className="p-2 sm:p-4">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">Settings</h1>
-        
-        {/* Location Settings Section */}
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4">Location Settings</h2>
-          
-          <form onSubmit={handleSaveLocationSettings}>
-            <div className="mb-4">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  name="enabled"
-                  checked={locationSettings.enabled}
-                  onChange={handleLocationChange}
-                  className="rounded text-blue-600"
-                />
-                <span className="ml-2 text-gray-700 text-sm sm:text-base">Enable Location Restriction</span>
-              </label>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                When enabled, workers can only mark attendance when within the specified location
-              </p>
-            </div>
-            
-            {locationSettings.enabled && (
-              <>
-                <div className="grid grid-cols-1 gap-4 mb-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="latitude">
-                      Latitude
-                    </label>
-                    <input
-                      type="number"
-                      id="latitude"
-                      name="latitude"
-                      value={locationSettings.latitude}
-                      onChange={handleLocationChange}
-                      step="any"
-                      className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="longitude">
-                      Longitude
-                    </label>
-                    <input
-                      type="number"
-                      id="longitude"
-                      name="longitude"
-                      value={locationSettings.longitude}
-                      onChange={handleLocationChange}
-                      step="any"
-                      className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="radius">
-                    Radius (meters)
-                  </label>
-                  <input
-                    type="number"
-                    id="radius"
-                    name="radius"
-                    value={locationSettings.radius}
-                    onChange={handleLocationChange}
-                    min="10"
-                    max="1000"
-                    className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    required
-                  />
-                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                    Recommended range: 50-1000 meters. Workers must be within this radius to mark attendance.
-                  </p>
-                </div>
-                
-                <div className="mb-4">
-                  <button
-                    type="button"
-                    onClick={getCurrentLocation}
-                    disabled={isGettingLocation}
-                    className={`bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded focus:outline-none focus:shadow-outline transition text-xs sm:text-sm ${
-                      isGettingLocation ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    {isGettingLocation ? 'Getting Location...' : 'Capture Current Location'}
-                  </button>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                    Click to automatically fill in your current location coordinates
-                  </p>
-                </div>
-              </>
-            )}
-            
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-4 sm:py-2 sm:px-6 rounded focus:outline-none focus:shadow-outline transition text-sm"
-              >
-                Save Location Settings
-              </button>
-            </div>
-          </form>
+    <div style={S.page}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 12,
+            background: 'linear-gradient(135deg, #6366F1, #4F46E5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(99,102,241,0.25)'
+          }}>
+            <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', margin: 0, fontFamily: "'Outfit',sans-serif" }}>
+              Settings
+            </h1>
+            <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Manage application settings and preferences</p>
+          </div>
         </div>
+      </div>
+      
+      {/* Location Settings Section */}
+      <div style={S.card()}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 20px 0' }}>Location Settings</h2>
         
-        {/* Batch Management Section */}
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-700">Batch Management</h2>
-            <button
-              onClick={handleAddNewBatch}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded focus:outline-none focus:shadow-outline transition text-sm"
-            >
-              Add New Batch
-            </button>
+        <form onSubmit={handleSaveLocationSettings}>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                name="enabled"
+                checked={locationSettings.enabled}
+                onChange={handleLocationChange}
+                style={{ width: 18, height: 18, accentColor: '#2563EB', cursor: 'pointer' }}
+              />
+              <span style={{ marginLeft: 10, fontSize: 14, fontWeight: 600, color: '#374151' }}>Enable Location Restriction</span>
+            </label>
+            <p style={{ fontSize: 13, color: '#6B7280', margin: '6px 0 0 28px' }}>
+              When enabled, workers can only mark attendance when within the specified location
+            </p>
           </div>
           
-          {/* Batches List */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr className="bg-gray-100 text-gray-600 uppercase text-xs sm:text-sm leading-normal">
-                  <th className="py-2 px-3 sm:py-3 sm:px-6 text-left">Batch Name</th>
-                  <th className="py-2 px-3 sm:py-3 sm:px-6 text-left">Working Hours</th>
-                  <th className="py-2 px-3 sm:py-3 sm:px-6 text-left hidden md:table-cell">Lunch Time</th>
-                  <th className="py-2 px-3 sm:py-3 sm:px-6 text-left hidden md:table-cell">Break Time</th>
-                  <th className="py-2 px-3 sm:py-3 sm:px-6 text-left">Actions</th>
+          {locationSettings.enabled && (
+            <div style={{ padding: 20, backgroundColor: '#F9FAFB', borderRadius: 12, border: '1px solid #E5E7EB', marginBottom: 20 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+                <div style={{ flex: '1 1 200px' }}>
+                  <label style={S.label}>Latitude</label>
+                  <input
+                    type="number"
+                    id="latitude"
+                    name="latitude"
+                    value={locationSettings.latitude}
+                    onChange={handleLocationChange}
+                    step="any"
+                    style={S.input}
+                    required
+                  />
+                </div>
+                
+                <div style={{ flex: '1 1 200px' }}>
+                  <label style={S.label}>Longitude</label>
+                  <input
+                    type="number"
+                    id="longitude"
+                    name="longitude"
+                    value={locationSettings.longitude}
+                    onChange={handleLocationChange}
+                    step="any"
+                    style={S.input}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div style={{ marginBottom: 20 }}>
+                <label style={S.label}>Radius (meters)</label>
+                <input
+                  type="number"
+                  id="radius"
+                  name="radius"
+                  value={locationSettings.radius}
+                  onChange={handleLocationChange}
+                  min="10"
+                  max="1000"
+                  style={S.input}
+                  required
+                />
+                <p style={{ fontSize: 13, color: '#6B7280', marginTop: 6 }}>
+                  Recommended range: 50-1000 meters. Workers must be within this radius to mark attendance.
+                </p>
+              </div>
+              
+              <div>
+                <button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={isGettingLocation}
+                  style={{ ...S.btnSuccess, opacity: isGettingLocation ? 0.7 : 1, cursor: isGettingLocation ? 'not-allowed' : 'pointer' }}
+                >
+                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {isGettingLocation ? 'Getting Location...' : 'Capture Current Location'}
+                </button>
+                <p style={{ fontSize: 13, color: '#6B7280', marginTop: 6 }}>
+                  Click to automatically fill in your current location coordinates
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16, borderTop: '1px solid #E5E7EB' }}>
+            <button type="submit" style={S.btnPrimary}>Save Location Settings</button>
+          </div>
+        </form>
+      </div>
+      
+      {/* Batch Management Section */}
+      <div style={{ ...S.card(), padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0 }}>Batch Management</h2>
+          <button onClick={handleAddNewBatch} style={S.btnPrimary}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add New Batch
+          </button>
+        </div>
+        
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={S.th}>Batch Name</th>
+                <th style={S.th}>Working Hours</th>
+                <th style={S.th}>Lunch Time</th>
+                <th style={S.th}>Break Time</th>
+                <th style={{ ...S.th, textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {batches.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ ...S.td, textAlign: 'center', padding: 24, color: '#6B7280' }}>No batches found. Create one to get started.</td>
                 </tr>
-              </thead>
-              <tbody className="text-gray-600 text-xs sm:text-sm">
-                {batches.map(batch => (
-                  <tr key={batch.id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="py-2 px-3 sm:py-3 sm:px-6">{batch.name}</td>
-                    <td className="py-2 px-3 sm:py-3 sm:px-6">{batch.workingTime.from} - {batch.workingTime.to}</td>
-                    <td className="py-2 px-3 sm:py-3 sm:px-6 hidden md:table-cell">
-                      {batch.lunchTime.enabled 
-                        ? `${batch.lunchTime.from} - ${batch.lunchTime.to}` 
-                        : 'Disabled'}
+              ) : (
+                batches.map(batch => (
+                  <tr key={batch.id} style={{ transition: 'background-color 0.15s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F9FAFB'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                    <td style={{ ...S.td, fontWeight: 600, color: '#111827' }}>{batch.name}</td>
+                    <td style={S.td}>{batch.workingTime.from} - {batch.workingTime.to}</td>
+                    <td style={S.td}>
+                      {batch.lunchTime.enabled ? `${batch.lunchTime.from} - ${batch.lunchTime.to}` : <span style={{ color: '#9CA3AF', fontStyle: 'italic' }}>Disabled</span>}
                     </td>
-                    <td className="py-2 px-3 sm:py-3 sm:px-6 hidden md:table-cell">
-                      {batch.breakTime.enabled 
-                        ? `${batch.breakTime.from} - ${batch.breakTime.to}` 
-                        : 'Disabled'}
+                    <td style={S.td}>
+                      {batch.breakTime.enabled ? `${batch.breakTime.from} - ${batch.breakTime.to}` : <span style={{ color: '#9CA3AF', fontStyle: 'italic' }}>Disabled</span>}
                     </td>
-                    <td className="py-2 px-3 sm:py-3 sm:px-6">
-                      <div className="flex item-center gap-2">
-                        <button
-                          onClick={() => handleEditBatch(batch)}
-                          className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => confirmDeleteBatch(batch)}
-                          className="text-red-600 hover:text-red-900 text-xs sm:text-sm"
-                        >
-                          Delete
-                        </button>
+                    <td style={{ ...S.td, textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                        <button onClick={() => handleEditBatch(batch)} style={{ ...S.btnSecondary, padding: '6px 12px', fontSize: 12 }}>Edit</button>
+                        <button onClick={() => confirmDeleteBatch(batch)} style={{ ...S.btnDanger, padding: '6px 12px', fontSize: 12 }}>Delete</button>
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Modal for Adding/Editing Batch */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md md:max-w-lg">
-            <div className="border-b px-4 py-3">
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
-                {currentBatch.id ? 'Edit Batch' : 'Add New Batch'}
-              </h3>
+        <div style={S.modalOverlay}>
+          <div style={S.modalContent}>
+            <div style={S.modalHeader}>
+              <h3 style={S.modalTitle}>{currentBatch.id ? 'Edit Batch' : 'Add New Batch'}</h3>
+              <button onClick={closeModal} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: '#6B7280' }}>×</button>
             </div>
             
-            <form onSubmit={handleSubmit}>
-              <div className="px-4 py-3 max-h-[70vh] overflow-y-auto">
-                <div className="mb-3">
-                  <label className="block text-gray-700 text-sm font-bold mb-1" htmlFor="name">
-                    Batch Name
-                  </label>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              <div style={S.modalBody}>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={S.label}>Batch Name</label>
                   <input
                     type="text"
-                    id="name"
                     name="name"
                     value={currentBatch.name}
                     onChange={handleChange}
-                    className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    style={S.input}
                     required
                   />
                 </div>
                 
                 {/* Working Time */}
-                <div className="mb-4">
-                  <h4 className="text-base sm:text-lg font-medium text-gray-700 mb-2">Working Time</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-1" htmlFor="workingTime.from">
-                        From
-                      </label>
-                      <input
-                        type="time"
-                        id="workingTime.from"
-                        name="workingTime.from"
-                        value={currentBatch.workingTime.from}
-                        onChange={handleChange}
-                        className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        required
-                      />
+                <div style={{ marginBottom: 24, padding: 16, border: '1px solid #E5E7EB', borderRadius: 12, backgroundColor: '#F9FAFB' }}>
+                  <h4 style={{ margin: '0 0 16px 0', fontSize: 15, fontWeight: 600, color: '#111827' }}>Working Time</h4>
+                  <div style={{ display: 'flex', gap: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={S.label}>From</label>
+                      <input type="time" name="workingTime.from" value={currentBatch.workingTime.from} onChange={handleChange} style={S.input} required />
                     </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-1" htmlFor="workingTime.to">
-                        To
-                      </label>
-                      <input
-                        type="time"
-                        id="workingTime.to"
-                        name="workingTime.to"
-                        value={currentBatch.workingTime.to}
-                        onChange={handleChange}
-                        className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        required
-                      />
+                    <div style={{ flex: 1 }}>
+                      <label style={S.label}>To</label>
+                      <input type="time" name="workingTime.to" value={currentBatch.workingTime.to} onChange={handleChange} style={S.input} required />
                     </div>
                   </div>
                 </div>
                 
                 {/* Lunch Time */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-base sm:text-lg font-medium text-gray-700">Lunch Time</h4>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={currentBatch.lunchTime.enabled}
-                        onChange={() => handleToggle('lunchTime')}
-                        className="rounded text-blue-600"
-                      />
-                      <span className="ml-2 text-gray-700 text-sm">Enable</span>
+                <div style={{ marginBottom: 24, padding: 16, border: '1px solid #E5E7EB', borderRadius: 12, backgroundColor: '#F9FAFB' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: currentBatch.lunchTime.enabled ? 16 : 0 }}>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#111827' }}>Lunch Time</h4>
+                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={currentBatch.lunchTime.enabled} onChange={() => handleToggle('lunchTime')} style={{ width: 16, height: 16, accentColor: '#2563EB', cursor: 'pointer' }} />
+                      <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 500, color: '#374151' }}>Enable</span>
                     </label>
                   </div>
                   
                   {currentBatch.lunchTime.enabled && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-1" htmlFor="lunchTime.from">
-                          From
-                        </label>
-                        <input
-                          type="time"
-                          id="lunchTime.from"
-                          name="lunchTime.from"
-                          value={currentBatch.lunchTime.from}
-                          onChange={handleChange}
-                          className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        />
+                    <div style={{ display: 'flex', gap: 16 }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={S.label}>From</label>
+                        <input type="time" name="lunchTime.from" value={currentBatch.lunchTime.from} onChange={handleChange} style={S.input} />
                       </div>
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-1" htmlFor="lunchTime.to">
-                          To
-                        </label>
-                        <input
-                          type="time"
-                          id="lunchTime.to"
-                          name="lunchTime.to"
-                          value={currentBatch.lunchTime.to}
-                          onChange={handleChange}
-                          className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        />
+                      <div style={{ flex: 1 }}>
+                        <label style={S.label}>To</label>
+                        <input type="time" name="lunchTime.to" value={currentBatch.lunchTime.to} onChange={handleChange} style={S.input} />
                       </div>
                     </div>
                   )}
                 </div>
                 
                 {/* Break Time */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-base sm:text-lg font-medium text-gray-700">Break Time</h4>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={currentBatch.breakTime.enabled}
-                        onChange={() => handleToggle('breakTime')}
-                        className="rounded text-blue-600"
-                      />
-                      <span className="ml-2 text-gray-700 text-sm">Enable</span>
+                <div style={{ marginBottom: 12, padding: 16, border: '1px solid #E5E7EB', borderRadius: 12, backgroundColor: '#F9FAFB' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: currentBatch.breakTime.enabled ? 16 : 0 }}>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#111827' }}>Break Time</h4>
+                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={currentBatch.breakTime.enabled} onChange={() => handleToggle('breakTime')} style={{ width: 16, height: 16, accentColor: '#2563EB', cursor: 'pointer' }} />
+                      <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 500, color: '#374151' }}>Enable</span>
                     </label>
                   </div>
                   
                   {currentBatch.breakTime.enabled && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-1" htmlFor="breakTime.from">
-                          From
-                        </label>
-                        <input
-                          type="time"
-                          id="breakTime.from"
-                          name="breakTime.from"
-                          value={currentBatch.breakTime.from}
-                          onChange={handleChange}
-                          className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        />
+                    <div style={{ display: 'flex', gap: 16 }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={S.label}>From</label>
+                        <input type="time" name="breakTime.from" value={currentBatch.breakTime.from} onChange={handleChange} style={S.input} />
                       </div>
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-1" htmlFor="breakTime.to">
-                          To
-                        </label>
-                        <input
-                          type="time"
-                          id="breakTime.to"
-                          name="breakTime.to"
-                          value={currentBatch.breakTime.to}
-                          onChange={handleChange}
-                          className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        />
+                      <div style={{ flex: 1 }}>
+                        <label style={S.label}>To</label>
+                        <input type="time" name="breakTime.to" value={currentBatch.breakTime.to} onChange={handleChange} style={S.input} />
                       </div>
                     </div>
                   )}
                 </div>
               </div>
               
-              <div className="border-t px-4 py-3 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-600 hover:text-gray-800 font-medium rounded-md transition text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-6 rounded focus:outline-none focus:shadow-outline transition text-sm"
-                >
-                  {currentBatch.id ? 'Update Batch' : 'Add Batch'}
-                </button>
+              <div style={S.modalFooter}>
+                <button type="button" onClick={closeModal} style={S.btnSecondary}>Cancel</button>
+                <button type="submit" style={S.btnPrimary}>{currentBatch.id ? 'Update Batch' : 'Add Batch'}</button>
               </div>
             </form>
           </div>
@@ -596,39 +535,31 @@ const Settings = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
-            <div className="border-b px-4 py-3">
-              <h3 className="text-lg font-semibold text-gray-800">Confirm Delete</h3>
+        <div style={S.modalOverlay}>
+          <div style={{ ...S.modalContent, maxWidth: 400 }}>
+            <div style={S.modalHeader}>
+              <h3 style={S.modalTitle}>Confirm Delete</h3>
+              <button onClick={closeDeleteConfirm} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: '#6B7280' }}>×</button>
             </div>
             
-            <div className="px-4 py-3">
-              <p className="text-gray-700 text-sm">
-                Are you sure you want to delete this batch <strong>"{batchToDelete?.name}"</strong>? 
-                This action cannot be undone.
+            <div style={S.modalBody}>
+              <p style={{ fontSize: 14, color: '#374151', margin: 0, lineHeight: 1.5 }}>
+                Are you sure you want to delete the batch <strong style={{ color: '#111827' }}>"{batchToDelete?.name}"</strong>? 
+                <br /><br />
+                <span style={{ color: '#EF4444' }}>This action cannot be undone.</span>
               </p>
             </div>
             
-            <div className="border-t px-4 py-3 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={closeDeleteConfirm}
-                className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-600 hover:text-gray-800 font-medium rounded-md transition text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteBatch}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-6 rounded focus:outline-none focus:shadow-outline transition text-sm"
-              >
-                Delete
-              </button>
+            <div style={S.modalFooter}>
+              <button type="button" onClick={closeDeleteConfirm} style={S.btnSecondary}>Cancel</button>
+              <button onClick={handleDeleteBatch} style={S.btnDanger}>Delete Batch</button>
             </div>
           </div>
         </div>
       )}
     </div>
   );
+
 };
 
 export default Settings;

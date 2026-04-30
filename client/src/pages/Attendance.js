@@ -1376,218 +1376,163 @@ const Attendance = () => {
     localStorage.setItem(`lastPunchTime_${workerId}`, Date.now().toString());
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 md:p-8 bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading attendance data...</p>
-        </div>
+  /* ── styles ─────────────────────────────────────────────── */
+  const S = {
+    page: { minHeight: '100vh', backgroundColor: '#F9FAFB', padding: '28px 24px', fontFamily: "'Inter', sans-serif" },
+    card: (extra = {}) => ({ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', ...extra }),
+    input: { backgroundColor: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: 10, padding: '10px 14px', color: '#111827', fontSize: 14, outline: 'none', width: '100%', boxSizing: 'border-box', transition: 'border-color 0.15s ease, box-shadow 0.15s ease' },
+    label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#4B5563', marginBottom: 6 },
+    th: { padding: '12px 16px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280', textAlign: 'left', borderBottom: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' },
+    td: { padding: '14px 16px', fontSize: 13.5, color: '#374151', borderBottom: '1px solid #E5E7EB', verticalAlign: 'middle' },
+    btnPrimary: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#2563EB', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(37,99,235,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSecondary: { padding: '10px 20px', borderRadius: 8, border: '1px solid #D1D5DB', backgroundColor: '#FFFFFF', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSuccess: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#10B981', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnDanger: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#EF4444', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' },
+  };
+
+  if (loading) return (
+    <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#3B82F6', animation: 'spin 0.8s linear infinite', margin: '0 auto 14px' }} />
+        <p style={{ color: '#6B7280', fontSize: 14, fontWeight: 500 }}>Loading attendance data…</p>
       </div>
-    );
-  }
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
-    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">Attendance Management</h2>
-          <p className="text-gray-600">Track worker attendance</p>
+    <div style={S.page}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 12,
+            background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(59,130,246,0.25)'
+          }}>
+            <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', margin: 0, fontFamily: "'Outfit',sans-serif" }}>
+              Attendance Management
+            </h1>
+            <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Track worker attendance</p>
+          </div>
         </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={openRFIDModal}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            RFID
-          </button>
-          <button
-            onClick={openFaceModal}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-          >
-            Face Attendance
-          </button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button onClick={openRFIDModal} style={S.btnPrimary}>RFID</button>
+          <button onClick={openFaceModal} style={S.btnSuccess}>Face Attendance</button>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
+        <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: 12, padding: '12px 16px', fontSize: 14, marginBottom: 16 }}>{error}</div>
       )}
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {success}
-        </div>
+        <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', borderRadius: 12, padding: '12px 16px', fontSize: 14, marginBottom: 16 }}>{success}</div>
       )}
 
       {/* Face Recognition Modal */}
       {showFaceModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Face Recognition Attendance
-              </h3>
-              <button
-                onClick={closeFaceModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 450, overflow: 'hidden' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>Face Recognition Attendance</h3>
+              <button onClick={closeFaceModal} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6B7280' }}>×</button>
             </div>
-            <div className="px-6 py-4">
-              <div className="mb-6">
-                <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                  {(faceDetectionStatus === 'loading' || faceDetectionStatus === 'camera_ready' || faceDetectionStatus === 'detecting' || faceDetectionStatus === 'recognized' || faceDetectionStatus === 'cooldown') && (
-                    <>
-                      <video 
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onLoadedData={() => {
-                          console.log('Attendance video element loaded data');
-                        }}
-                      />
-                      <canvas 
-                        ref={canvasRef}
-                        className="absolute inset-0 w-full h-full"
-                      />
-                      
-                      {/* Cooldown Timer Display */}
-                      {cooldownTimer && matchedWorker && cooldownTimer.workerId === matchedWorker._id && (
-                        <div className="absolute top-4 left-0 right-0 flex justify-center">
-                          <div className="bg-yellow-500 bg-opacity-90 text-white px-4 py-2 rounded-lg">
-                            Cooldown: {Math.ceil(cooldownTimer.remainingTime / 1000)} seconds remaining
-                          </div>
+            
+            <div style={{ padding: 24, textAlign: 'center' }}>
+              <div style={{ position: 'relative', width: '100%', height: 260, borderRadius: 12, overflow: 'hidden', backgroundColor: '#000', marginBottom: 20 }}>
+                {(faceDetectionStatus === 'loading' || faceDetectionStatus === 'camera_ready' || faceDetectionStatus === 'detecting' || faceDetectionStatus === 'recognized' || faceDetectionStatus === 'cooldown') && (
+                  <>
+                    <video ref={videoRef} autoPlay playsInline muted style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onLoadedData={() => console.log('Attendance video element loaded data')} />
+                    <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+                    
+                    {cooldownTimer && matchedWorker && cooldownTimer.workerId === matchedWorker._id && (
+                      <div style={{ position: 'absolute', top: 16, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ backgroundColor: 'rgba(234,179,8,0.9)', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontSize: 14, fontWeight: 600 }}>
+                          Cooldown: {Math.ceil(cooldownTimer.remainingTime / 1000)} seconds remaining
                         </div>
-                      )}
-                      
-                      {faceDetectionStatus === 'detecting' && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-blue-500 bg-opacity-75 text-white px-4 py-2 rounded-lg">
-                            Detecting face...
-                          </div>
-                        </div>
-                      )}
-                      
-                      {faceDetectionStatus === 'cooldown' && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-yellow-500 bg-opacity-75 text-white px-4 py-2 rounded-lg">
-                            On cooldown, please wait...
-                          </div>
-                        </div>
-                      )}
-                      
-                      {faceDetectionStatus === 'loading' && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-gray-500 bg-opacity-75 text-white px-4 py-2 rounded-lg">
-                            Initializing camera...
-                          </div>
-                        </div>
-                      )}
-                      
-                      {faceDetectionStatus === 'recognized' && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-green-500 bg-opacity-75 text-white px-4 py-2 rounded-lg">
-                            Face recognized and attendance recorded!
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  
-                  {faceDetectionStatus === 'error' && (
-                    <div className="text-center">
-                      <svg className="w-12 h-12 text-red-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                      </svg>
-                      <p className="text-gray-600">Error accessing camera</p>
-                    </div>
-                  )}
-                  
-                  {faceDetectionStatus === 'recognized' && (
-                    <div className="absolute bottom-4 left-0 right-0">
-                      <div className="bg-green-500 bg-opacity-90 text-white px-4 py-2 rounded-lg mx-4">
-                        Face recognized and attendance recorded!
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                    
+                    {faceDetectionStatus === 'detecting' && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                        <div style={{ backgroundColor: 'rgba(59,130,246,0.75)', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontSize: 14 }}>Detecting face...</div>
+                      </div>
+                    )}
+                    {faceDetectionStatus === 'cooldown' && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                        <div style={{ backgroundColor: 'rgba(234,179,8,0.75)', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontSize: 14 }}>On cooldown, please wait...</div>
+                      </div>
+                    )}
+                    {faceDetectionStatus === 'loading' && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                        <div style={{ backgroundColor: 'rgba(107,114,128,0.75)', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontSize: 14 }}>Initializing camera...</div>
+                      </div>
+                    )}
+                    {faceDetectionStatus === 'recognized' && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                        <div style={{ backgroundColor: 'rgba(16,185,129,0.9)', color: '#FFF', padding: '12px 20px', borderRadius: 8, fontSize: 15, fontWeight: 600, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>Face recognized and attendance recorded!</div>
+                      </div>
+                    )}
+                  </>
+                )}
                 
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-600">
-                    {faceDetectionStatus === 'detecting' 
-                      ? 'Scanning for faces... Please position your face in the frame' 
-                      : faceDetectionStatus === 'recognized' 
-                        ? 'Face recognized and attendance recorded!' 
-                        : faceDetectionStatus === 'loading'
-                          ? 'Initializing camera and face detection models...'
-                          : faceDetectionStatus === 'error'
-                            ? 'Error with face detection. Please close and reopen the scanner.'
-                            : faceDetectionStatus === 'cooldown'
-                              ? 'On cooldown, please wait before marking attendance again.'
-                              : 'Waiting for camera access...'}
-                  </p>
-                  {faceDetectionStatus === 'loading' && (
-                    <div className="mt-4">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                      <p className="text-sm text-gray-500 mt-2">Loading face detection models...</p>
-                    </div>
-                  )}
-                  {faceDetectionStatus === 'detecting' && (
-                    <div className="mt-4">
-                      <div className="inline-flex space-x-1">
-                        <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce"></div>
-                        <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                        <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-2">Searching for faces</p>
-                    </div>
-                  )}
-                  {faceDetectionStatus === 'recognized' && (
-                    <div className="mt-4">
-                      <div className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-500">
-                        <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-2">Attendance recorded successfully</p>
-                    </div>
-                  )}
-                  {faceDetectionStatus === 'error' && (
-                    <div className="mt-4">
-                      <div className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-red-500">
-                        <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-2">Please close and reopen the scanner</p>
-                      <button
-                        onClick={closeFaceModal}
-                        className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition"
-                      >
-                        Close Scanner
-                      </button>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Worker selection dropdown removed as attendance is now fully automated */}
+                {faceDetectionStatus === 'error' && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F9FAFB' }}>
+                    <svg style={{ width: 48, height: 48, color: '#EF4444', marginBottom: 12 }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <p style={{ color: '#4B5563', margin: 0, fontSize: 14 }}>Error accessing camera</p>
+                  </div>
+                )}
               </div>
               
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={closeFaceModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
+              <div>
+                <p style={{ fontSize: 14, color: '#4B5563', margin: '0 0 16px 0', fontWeight: 500 }}>
+                  {faceDetectionStatus === 'detecting' ? 'Scanning for faces... Please position your face in the frame' : faceDetectionStatus === 'recognized' ? 'Face recognized and attendance recorded!' : faceDetectionStatus === 'loading' ? 'Initializing camera and face detection models...' : faceDetectionStatus === 'error' ? 'Error with face detection. Please close and reopen the scanner.' : faceDetectionStatus === 'cooldown' ? 'On cooldown, please wait before marking attendance again.' : 'Waiting for camera access...'}
+                </p>
+                
+                {faceDetectionStatus === 'loading' && (
+                  <div>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #E5E7EB', borderTopColor: '#3B82F6', animation: 'spin 0.8s linear infinite', margin: '0 auto 8px' }} />
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Loading face detection models...</p>
+                  </div>
+                )}
+                {faceDetectionStatus === 'detecting' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '8px 0' }}>
+                      <div style={{ width: 8, height: 8, backgroundColor: '#3B82F6', borderRadius: '50%', animation: 'bounce 1s infinite' }} />
+                      <div style={{ width: 8, height: 8, backgroundColor: '#3B82F6', borderRadius: '50%', animation: 'bounce 1s infinite', animationDelay: '0.2s' }} />
+                      <div style={{ width: 8, height: 8, backgroundColor: '#3B82F6', borderRadius: '50%', animation: 'bounce 1s infinite', animationDelay: '0.4s' }} />
+                    </div>
+                    <style>{`@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }`}</style>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Searching for faces</p>
+                  </div>
+                )}
+                {faceDetectionStatus === 'recognized' && (
+                  <div>
+                    <div style={{ width: 32, height: 32, backgroundColor: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+                      <svg style={{ width: 20, height: 20, color: '#FFF' }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Attendance recorded successfully</p>
+                  </div>
+                )}
+                {faceDetectionStatus === 'error' && (
+                  <div>
+                    <div style={{ width: 32, height: 32, backgroundColor: '#EF4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+                      <svg style={{ width: 20, height: 20, color: '#FFF' }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </div>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 12px 0' }}>Please close and reopen the scanner</p>
+                    <button onClick={closeFaceModal} style={S.btnPrimary}>Close Scanner</button>
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+                <button onClick={closeFaceModal} style={S.btnSecondary}>Cancel</button>
               </div>
             </div>
           </div>
@@ -1596,53 +1541,33 @@ const Attendance = () => {
 
       {/* RFID Modal */}
       {showRFIDModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Enter RFID
-              </h3>
-              <button
-                onClick={closeRFIDModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 400 }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>Enter RFID</h3>
+              <button onClick={closeRFIDModal} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6B7280' }}>×</button>
             </div>
-            <div className="px-6 py-4">
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  RFID
-                </label>
+            <div style={{ padding: 20 }}>
+              <div style={{ marginBottom: 20 }}>
+                <label style={S.label}>RFID</label>
                 <input
                   type="text"
                   value={rfidInput}
                   onChange={handleRFIDInput}
                   onKeyPress={handleRFIDKeyPress}
                   placeholder="Enter RFID"
-                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  style={S.input}
                   autoFocus
                   disabled={scanningRFID}
                 />
-                <p className="mt-2 text-sm text-gray-500">
-                  RFID format: 2 letters + 4 digits (e.g., AB1234)
-                </p>
+                <p style={{ marginTop: 8, fontSize: 12, color: '#6B7280' }}>RFID format: 2 letters + 4 digits (e.g., AB1234)</p>
               </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={closeRFIDModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                  disabled={scanningRFID}
-                >
-                  Cancel
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                <button onClick={closeRFIDModal} style={S.btnSecondary} disabled={scanningRFID}>Cancel</button>
                 <button
                   onClick={validateRFID}
                   disabled={!rfidInput || scanningRFID}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+                  style={{ ...S.btnPrimary, opacity: (!rfidInput || scanningRFID) ? 0.5 : 1 }}
                 >
                   {scanningRFID ? 'Validating...' : 'Enter'}
                 </button>
@@ -1654,37 +1579,22 @@ const Attendance = () => {
 
       {/* Confirmation Modal */}
       {showConfirmationModal && workerForPunch && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Confirm Attendance
-              </h3>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 400 }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#111827' }}>Confirm Attendance</h3>
             </div>
-            <div className="px-6 py-4">
-              <div className="mb-6">
-                <p className="text-gray-700 mb-4">
-                  Do you want to Punch {isPunchIn ? 'In' : 'Out'}?
-                </p>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="font-medium">{workerForPunch.name}</p>
-                  <p className="text-sm text-gray-600">{workerForPunch.rfid}</p>
+            <div style={{ padding: 20 }}>
+              <div style={{ marginBottom: 20 }}>
+                <p style={{ fontSize: 14, color: '#374151', marginBottom: 16 }}>Do you want to Punch {isPunchIn ? 'In' : 'Out'}?</p>
+                <div style={{ backgroundColor: '#F9FAFB', padding: 16, borderRadius: 8, border: '1px solid #E5E7EB' }}>
+                  <p style={{ fontWeight: 600, fontSize: 15, margin: '0 0 4px 0', color: '#111827' }}>{workerForPunch.name}</p>
+                  <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>{workerForPunch.rfid}</p>
                 </div>
               </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={closeConfirmationModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmPunch}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                >
-                  Punch {isPunchIn ? 'In' : 'Out'}
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                <button onClick={closeConfirmationModal} style={S.btnSecondary}>Cancel</button>
+                <button onClick={confirmPunch} style={S.btnPrimary}>Punch {isPunchIn ? 'In' : 'Out'}</button>
               </div>
             </div>
           </div>
@@ -1692,114 +1602,95 @@ const Attendance = () => {
       )}
 
       {/* Search and Date Selection */}
-      <div className="bg-white rounded shadow overflow-hidden mb-6">
-        <div className="p-6">
-          <div className="flex flex-col md:flex-row gap-4 w-full">
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Search Workers
-              </label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, RFID, or department..."
-                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+      <div style={{ ...S.card({ marginBottom: 24, padding: 20 }) }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={S.label}>Search Workers</label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name, RFID, or department..."
+              style={S.input}
+            />
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <label style={S.label}>Filter Type</label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                style={S.input}
+              >
+                <option value="date">Single Date</option>
+                <option value="dateRange">Date Range</option>
+                <option value="all">All Dates</option>
+              </select>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
+            {(filterType === 'date' || filterType === 'dateRange') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Filter Type</label>
-                <select 
-                  value={filterType} 
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="date">Single Date</option>
-                  <option value="dateRange">Date Range</option>
-                  <option value="all">All Dates</option>
-                </select>
+                <label style={S.label}>{filterType === 'date' ? 'Date' : 'Start Date'}</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  style={S.input}
+                />
               </div>
-
-              {(filterType === 'date' || filterType === 'dateRange') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {filterType === 'date' ? 'Date' : 'Start Date'}
-                  </label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-              )}
-
-              {filterType === 'dateRange' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-              )}
-            </div>
+            )}
+            {filterType === 'dateRange' && (
+              <div>
+                <label style={S.label}>End Date</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  style={S.input}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Attendance Table */}
-      <div className="bg-white rounded shadow overflow-hidden">
-        <div className="border-b border-gray-200 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div style={S.card()}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <h3 className="text-lg font-semibold">Attendance Records</h3>
-            <p className="text-gray-600 mt-1">
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#111827' }}>Attendance Records</h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: 13, color: '#6B7280' }}>
               Attendance records
               {filterType === 'date' && ` for ${formatDate(startDate)}`}
               {filterType === 'dateRange' && ` from ${formatDate(startDate)} to ${formatDate(endDate)}`}
               {filterType === 'all' && ` (All Dates)`}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => exportAttendance(api, 'pdf', { filterType, startDate, endDate })}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition text-sm"
-            >
-              Export PDF
-            </button>
-            <button
-              onClick={() => exportAttendance(api, 'excel', { filterType, startDate, endDate })}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition text-sm"
-            >
-              Export Excel
-            </button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button onClick={() => exportAttendance(api, 'pdf', { filterType, startDate, endDate })} style={{ ...S.btnDanger, backgroundColor: '#DC2626' }}>Export PDF</button>
+            <button onClick={() => exportAttendance(api, 'excel', { filterType, startDate, endDate })} style={{ ...S.btnSuccess, backgroundColor: '#16A34A' }}>Export Excel</button>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID (RFID)</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">In Time</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Out Time</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                <th style={S.th}>Name</th>
+                <th style={S.th}>Employee ID (RFID)</th>
+                <th style={S.th}>Department</th>
+                <th style={S.th}>In Time</th>
+                <th style={S.th}>Out Time</th>
+                <th style={S.th}>Duration</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {filteredWorkers.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan="6" style={{ ...S.td, textAlign: 'center', color: '#6B7280', padding: 24 }}>
                     No attendance records found for the selected filter.
                   </td>
                 </tr>
               ) : (
                 (() => {
-                  // Extract all records from matched workers
                   const allRecords = [];
                   filteredWorkers.forEach(worker => {
                     const records = getFilteredRecordsForWorker(worker);
@@ -1808,7 +1699,6 @@ const Attendance = () => {
                     });
                   });
                   
-                  // Group by date
                   const recordsByDate = {};
                   allRecords.forEach(record => {
                     const dateStr = new Date(record.date).toDateString();
@@ -1816,13 +1706,10 @@ const Attendance = () => {
                     recordsByDate[dateStr].push(record);
                   });
                   
-                  // Sort dates (newest first)
                   const sortedDates = Object.keys(recordsByDate).sort((a, b) => new Date(b) - new Date(a));
                   
                   return sortedDates.map((dateStr) => {
                     const dailyRecords = recordsByDate[dateStr];
-                    
-                    // Group daily records back by worker
                     const workerDailyRecords = {};
                     dailyRecords.forEach(rec => {
                       const wId = rec.worker._id;
@@ -1832,12 +1719,12 @@ const Attendance = () => {
                     
                     return (
                       <React.Fragment key={dateStr}>
-                        <tr className="bg-blue-50 border-y border-blue-200">
-                          <td colSpan="6" className="px-6 py-3 text-sm font-bold text-gray-800">
+                        <tr style={{ backgroundColor: '#F0F9FF', borderTop: '1px solid #BAE6FD', borderBottom: '1px solid #BAE6FD' }}>
+                          <td colSpan="6" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 700, color: '#0369A1' }}>
                             Date: {formatDate(dateStr)}
                           </td>
                         </tr>
-                        {Object.values(workerDailyRecords).map((wRecords, idx) => {
+                        {Object.values(workerDailyRecords).map((wRecords) => {
                           const worker = wRecords[0].worker;
                           const allPunches = processPunches(wRecords);
                           const totalDuration = calculateDuration(wRecords);
@@ -1853,45 +1740,35 @@ const Attendance = () => {
                           });
                           
                           return (
-                            <tr key={`${dateStr}-${worker._id}`} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{worker.name}</div>
+                            <tr key={`${dateStr}-${worker._id}`} style={{ transition: 'background-color 0.15s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F9FAFB'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                              <td style={S.td}>
+                                <div style={{ fontWeight: 600, color: '#111827' }}>{worker.name}</div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {worker.rfid || 'N/A'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {worker.department ? worker.department.name : 'N/A'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <td style={{ ...S.td, color: '#6B7280' }}>{worker.rfid || 'N/A'}</td>
+                              <td style={{ ...S.td, color: '#6B7280' }}>{worker.department ? worker.department.name : 'N/A'}</td>
+                              <td style={S.td}>
                                 {inTimes.length > 0 ? (
-                                  <div className="flex flex-col space-y-1">
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                     {inTimes.map((punch, pIdx) => (
-                                      <span key={pIdx} className="text-green-600 font-medium">
-                                        {formatTime(punch.time)}
-                                      </span>
+                                      <span key={pIdx} style={{ color: '#059669', fontWeight: 500 }}>{formatTime(punch.time)}</span>
                                     ))}
                                   </div>
                                 ) : (
-                                  <span className="text-gray-400">--:-- --</span>
+                                  <span style={{ color: '#9CA3AF' }}>--:-- --</span>
                                 )}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <td style={S.td}>
                                 {outTimes.length > 0 ? (
-                                  <div className="flex flex-col space-y-1">
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                     {outTimes.map((punch, pIdx) => (
-                                      <span key={pIdx} className="text-red-600 font-medium">
-                                        {formatTime(punch.time)}
-                                      </span>
+                                      <span key={pIdx} style={{ color: '#DC2626', fontWeight: 500 }}>{formatTime(punch.time)}</span>
                                     ))}
                                   </div>
                                 ) : (
-                                  <span className="text-gray-400">--:-- --</span>
+                                  <span style={{ color: '#9CA3AF' }}>--:-- --</span>
                                 )}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {totalDuration}
-                              </td>
+                              <td style={{ ...S.td, color: '#4B5563' }}>{totalDuration}</td>
                             </tr>
                           );
                         })}

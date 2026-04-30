@@ -450,60 +450,77 @@ const Financials = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 md:p-8 bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading financial data...</div>
+  /* ── styles ─────────────────────────────────────────────── */
+  const S = {
+    page: { minHeight: '100vh', backgroundColor: '#F9FAFB', padding: '28px 24px', fontFamily: "'Inter', sans-serif" },
+    card: (extra = {}) => ({ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', ...extra }),
+    input: { backgroundColor: '#FFFFFF', border: '1px solid #D1D5DB', borderRadius: 10, padding: '10px 14px', color: '#111827', fontSize: 14, outline: 'none', width: '100%', boxSizing: 'border-box', transition: 'border-color 0.15s ease, box-shadow 0.15s ease' },
+    label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#4B5563', marginBottom: 6 },
+    th: { padding: '12px 16px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280', textAlign: 'left', borderBottom: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' },
+    td: { padding: '14px 16px', fontSize: 13.5, color: '#374151', borderBottom: '1px solid #E5E7EB', verticalAlign: 'middle' },
+    btnPrimary: { padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#2563EB', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(37,99,235,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSecondary: { padding: '10px 20px', borderRadius: 8, border: '1px solid #D1D5DB', backgroundColor: '#FFFFFF', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnDanger: { padding: '8px 16px', borderRadius: 8, border: 'none', backgroundColor: '#EF4444', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    btnSuccess: { padding: '8px 16px', borderRadius: 8, border: 'none', backgroundColor: '#10B981', color: '#FFFFFF', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    statCard: (bg, border) => ({ background: bg, border: `1px solid ${border}`, borderRadius: 16, padding: '20px 24px', flex: '1 1 200px', cursor: 'pointer', transition: 'transform 0.2s' })
+  };
+
+  if (loading) return (
+    <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#3B82F6', animation: 'spin 0.8s linear infinite', margin: '0 auto 14px' }} />
+        <p style={{ color: '#6B7280', fontSize: 14, fontWeight: 500 }}>Loading financial data...</p>
       </div>
-    );
-  }
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   if (error) {
     return (
-      <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
+      <div style={S.page}>
+        <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: 12, padding: '12px 16px', fontSize: 14 }}>{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="p-2 md:p-4 lg:p-8 bg-gray-100 min-h-screen">
-      <div className="mb-4 md:mb-8">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Financial Dashboard</h1>
-        <p className="text-sm md:text-base text-gray-600">Overview of your repair shop's financial performance</p>
+    <div style={S.page}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 12,
+            background: 'linear-gradient(135deg, #10B981, #059669)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(16,185,129,0.25)'
+          }}>
+            <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', margin: 0, fontFamily: "'Outfit',sans-serif" }}>
+              Financial Dashboard
+            </h1>
+            <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Overview of your repair shop's financial performance</p>
+          </div>
+        </div>
       </div>
       
       {/* Filter Controls */}
-      <div className="bg-white rounded-lg shadow mb-4 md:mb-8 p-3 md:p-6">
-        <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">Filters</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-4">
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Date From</label>
-            <input
-              type="date"
-              value={filters.dateFrom}
-              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-              className="w-full px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+      <div style={{ ...S.card({ marginBottom: 24, padding: 24 }) }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 16px 0' }}>Filters</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={S.label}>Date From</label>
+            <input type="date" value={filters.dateFrom} onChange={(e) => handleFilterChange('dateFrom', e.target.value)} style={S.input} />
           </div>
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Date To</label>
-            <input
-              type="date"
-              value={filters.dateTo}
-              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-              className="w-full px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={S.label}>Date To</label>
+            <input type="date" value={filters.dateTo} onChange={(e) => handleFilterChange('dateTo', e.target.value)} style={S.input} />
           </div>
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Month</label>
-            <select
-              value={filters.month}
-              onChange={(e) => handleFilterChange('month', e.target.value)}
-              className="w-full px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={S.label}>Month</label>
+            <select value={filters.month} onChange={(e) => handleFilterChange('month', e.target.value)} style={S.input}>
               <option value="">All Months</option>
               <option value="01">January</option>
               <option value="02">February</option>
@@ -519,126 +536,62 @@ const Financials = () => {
               <option value="12">December</option>
             </select>
           </div>
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Year</label>
-            <input
-              type="number"
-              value={filters.year}
-              onChange={(e) => handleFilterChange('year', e.target.value)}
-              placeholder="YYYY"
-              className="w-full px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={S.label}>Year</label>
+            <input type="number" value={filters.year} onChange={(e) => handleFilterChange('year', e.target.value)} placeholder="YYYY" style={S.input} />
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-          <button
-            type="button"
-            onClick={() => fetchData()}
-            className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 text-white text-sm md:text-base rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Apply Filters
-          </button>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="px-3 py-1.5 md:px-4 md:py-2 bg-gray-500 text-white text-sm md:text-base rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-          >
-            Reset Filters
-          </button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button type="button" onClick={() => fetchData()} style={S.btnPrimary}>Apply Filters</button>
+          <button type="button" onClick={resetFilters} style={S.btnSecondary}>Reset Filters</button>
         </div>
       </div>
       
       {/* Revenue Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-4 md:mb-8">
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow p-4 md:p-6 border border-green-100">
-          <h3 className="text-sm md:text-lg font-medium text-gray-900">Total Jobs Revenue</h3>
-          <p className="text-lg md:text-2xl font-bold text-green-600">{formatCurrency(financialData.total_jobs_revenue || 0)}</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+        <div style={S.statCard('linear-gradient(135deg, #ECFDF5, #D1FAE5)', '#A7F3D0')}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600, color: '#065F46' }}>Total Jobs Revenue</h3>
+          <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#059669' }}>{formatCurrency(financialData.total_jobs_revenue || 0)}</p>
         </div>
-        <div className="bg-gradient-to-r from-blue-50 to-sky-50 rounded-lg shadow p-4 md:p-6 border border-blue-100 cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={fetchServiceChargeDetails}>
-          <h3 className="text-sm md:text-lg font-medium text-gray-900">Service Charges</h3>
-          <p className="text-lg md:text-2xl font-bold text-blue-600">{formatCurrency(financialData.total_service_charges || 0)}</p>
+        <div style={S.statCard('linear-gradient(135deg, #EFF6FF, #DBEAFE)', '#BFDBFE')} onClick={fetchServiceChargeDetails}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600, color: '#1E40AF' }}>Service Charges</h3>
+          <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#2563EB' }}>{formatCurrency(financialData.total_service_charges || 0)}</p>
         </div>
-        <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg shadow p-4 md:p-6 border border-purple-100 cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={fetchPartsRevenueDetails}>
-          <h3 className="text-sm md:text-lg font-medium text-gray-900">Parts Revenue</h3>
-          <p className="text-lg md:text-2xl font-bold text-purple-600">{formatCurrency((financialData.parts_revenue_analysis || []).reduce((sum, item) => sum + (item.revenue || 0), 0))}</p>
+        <div style={S.statCard('linear-gradient(135deg, #FAF5FF, #F3E8FF)', '#E9D5FF')} onClick={fetchPartsRevenueDetails}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600, color: '#6B21A8' }}>Parts Revenue</h3>
+          <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#7C3AED' }}>{formatCurrency((financialData.parts_revenue_analysis || []).reduce((sum, item) => sum + (item.revenue || 0), 0))}</p>
         </div>
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg shadow p-4 md:p-6 border border-amber-100">
-          <h3 className="text-sm md:text-lg font-medium text-gray-900">Total Transactions</h3>
-          <p className="text-lg md:text-2xl font-bold text-amber-600">{formatCurrency((financialData.transaction_revenue_by_department || []).reduce((sum, item) => sum + (item.revenue || 0), 0))}</p>
+        <div style={S.statCard('linear-gradient(135deg, #FFFBEB, #FEF3C7)', '#FDE68A')}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600, color: '#92400E' }}>Total Transactions</h3>
+          <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#D97706' }}>{formatCurrency((financialData.transaction_revenue_by_department || []).reduce((sum, item) => sum + (item.revenue || 0), 0))}</p>
         </div>
       </div>
 
       {/* Revenue by Department */}
-      <div className="bg-white rounded-lg shadow mb-4 md:mb-8 p-3 md:p-6">
-        <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">Revenue by Department</h2>
-        <div className="h-60 md:h-80">
+      <div style={{ ...S.card({ marginBottom: 24, padding: 24 }) }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 20px 0' }}>Revenue by Department</h2>
+        <div style={{ height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={financialData.revenue_by_department && Array.isArray(financialData.revenue_by_department) ? financialData.revenue_by_department : []}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              style={{ background: '#ffffff', borderRadius: '8px' }}
+              style={{ background: '#ffffff' }}
               animationBegin={300}
               animationDuration={1000}
               animationEasing="ease-out"
             >
               <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="department" 
-                angle={-45} 
-                textAnchor="end" 
-                height={60}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#666' }}
-              />
-              <YAxis 
-                tickFormatter={(value) => `Rs ${value.toLocaleString()}`} 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#666' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1f2937', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-                  color: '#fff'
-                }}
-                formatter={(value) => [`Rs ${value.toLocaleString()}`, 'Revenue']}
-                labelStyle={{ fontWeight: 'bold', color: '#d1d5db' }}
-                cursor={{ stroke: '#9ca3af', strokeDasharray: '2 2' }}
-              />
+              <XAxis dataKey="department" angle={-45} textAnchor="end" height={60} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+              <YAxis tickFormatter={(value) => `Rs ${value.toLocaleString()}`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none', borderRadius: 8, color: '#fff' }} formatter={(value) => [`Rs ${value.toLocaleString()}`, 'Revenue']} labelStyle={{ fontWeight: 'bold', color: '#D1D5DB' }} cursor={{ stroke: '#9CA3AF', strokeDasharray: '2 2' }} />
               <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="revenue" 
-                fill="url(#colorGradientBlue)" 
-                stroke="#3b82f6" 
-                strokeWidth={2} 
-                name="Revenue" 
-                dot={{ stroke: '#3b82f6', strokeWidth: 2, r: 3, fill: '#fff' }}
-                animationBegin={400}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#1d4ed8" 
-                strokeWidth={2} 
-                dot={{ r: 4, stroke: '#1d4ed8', strokeWidth: 2, fill: '#fff' }} 
-                activeDot={{ r: 6, stroke: '#1e40af', strokeWidth: 2, fill: '#fff' }} 
-                name="Revenue" 
-                animationBegin={400}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
+              <Area type="monotone" dataKey="revenue" fill="url(#colorGradientBlue)" stroke="#3B82F6" strokeWidth={2} name="Revenue" dot={{ stroke: '#3B82F6', strokeWidth: 2, r: 3, fill: '#fff' }} animationBegin={400} animationDuration={800} animationEasing="ease-out" />
+              <Line type="monotone" dataKey="revenue" stroke="#1D4ED8" strokeWidth={2} dot={{ r: 4, stroke: '#1D4ED8', strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, stroke: '#1E40AF', strokeWidth: 2, fill: '#fff' }} name="Revenue" animationBegin={400} animationDuration={800} animationEasing="ease-out" />
               <defs>
                 <linearGradient id="colorGradientBlue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05}/>
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
             </AreaChart>
@@ -647,75 +600,29 @@ const Financials = () => {
       </div>
 
       {/* Monthly Revenue Trend */}
-      <div className="bg-white rounded-lg shadow mb-4 md:mb-8 p-3 md:p-6">
-        <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">Monthly Revenue Trend</h2>
-        <div className="h-60 md:h-80">
+      <div style={{ ...S.card({ marginBottom: 24, padding: 24 }) }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 20px 0' }}>Monthly Revenue Trend</h2>
+        <div style={{ height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={financialData.monthly_revenue && Array.isArray(financialData.monthly_revenue) ? financialData.monthly_revenue : []}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              style={{ background: '#ffffff', borderRadius: '8px' }}
+              style={{ background: '#ffffff' }}
               animationBegin={300}
               animationDuration={1000}
               animationEasing="ease-out"
             >
               <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="month" 
-                angle={-45} 
-                textAnchor="end" 
-                height={60}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#666' }}
-              />
-              <YAxis 
-                tickFormatter={(value) => `Rs ${value.toLocaleString()}`} 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#666' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1f2937', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-                  color: '#fff'
-                }}
-                formatter={(value) => [`Rs ${value.toLocaleString()}`, 'Revenue']}
-                labelStyle={{ fontWeight: 'bold', color: '#d1d5db' }}
-                cursor={{ stroke: '#9ca3af', strokeDasharray: '2 2' }}
-              />
+              <XAxis dataKey="month" angle={-45} textAnchor="end" height={60} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+              <YAxis tickFormatter={(value) => `Rs ${value.toLocaleString()}`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none', borderRadius: 8, color: '#fff' }} formatter={(value) => [`Rs ${value.toLocaleString()}`, 'Revenue']} labelStyle={{ fontWeight: 'bold', color: '#D1D5DB' }} cursor={{ stroke: '#9CA3AF', strokeDasharray: '2 2' }} />
               <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="revenue" 
-                fill="url(#colorGradientGreen)" 
-                stroke="#10b981" 
-                strokeWidth={2} 
-                name="Revenue" 
-                dot={{ stroke: '#10b981', strokeWidth: 2, r: 3, fill: '#fff' }}
-                animationBegin={400}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#047857" 
-                strokeWidth={2} 
-                dot={{ r: 4, stroke: '#047857', strokeWidth: 2, fill: '#fff' }} 
-                activeDot={{ r: 6, stroke: '#047857', strokeWidth: 2, fill: '#fff' }} 
-                name="Revenue" 
-                animationBegin={400}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
+              <Area type="monotone" dataKey="revenue" fill="url(#colorGradientGreen)" stroke="#10B981" strokeWidth={2} name="Revenue" dot={{ stroke: '#10B981', strokeWidth: 2, r: 3, fill: '#fff' }} animationBegin={400} animationDuration={800} animationEasing="ease-out" />
+              <Line type="monotone" dataKey="revenue" stroke="#047857" strokeWidth={2} dot={{ r: 4, stroke: '#047857', strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, stroke: '#047857', strokeWidth: 2, fill: '#fff' }} name="Revenue" animationBegin={400} animationDuration={800} animationEasing="ease-out" />
               <defs>
                 <linearGradient id="colorGradientGreen" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
             </AreaChart>
@@ -724,75 +631,29 @@ const Financials = () => {
       </div>
       
       {/* Parts Revenue Analysis */}
-      <div className="bg-white rounded-lg shadow mb-4 md:mb-8 p-3 md:p-6">
-        <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">Parts Revenue Analysis</h2>
-        <div className="h-60 md:h-80">
+      <div style={{ ...S.card({ marginBottom: 24, padding: 24 }) }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 20px 0' }}>Parts Revenue Analysis</h2>
+        <div style={{ height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={financialData.parts_revenue_analysis && Array.isArray(financialData.parts_revenue_analysis) ? financialData.parts_revenue_analysis : []}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              style={{ background: '#ffffff', borderRadius: '8px' }}
+              style={{ background: '#ffffff' }}
               animationBegin={300}
               animationDuration={1000}
               animationEasing="ease-out"
             >
               <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="name" 
-                angle={-45} 
-                textAnchor="end" 
-                height={60}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#666' }}
-              />
-              <YAxis 
-                tickFormatter={(value) => `Rs ${value.toLocaleString()}`} 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#666' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1f2937', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-                  color: '#fff'
-                }}
-                formatter={(value) => [`Rs ${value.toLocaleString()}`, 'Revenue']}
-                labelStyle={{ fontWeight: 'bold', color: '#d1d5db' }}
-                cursor={{ stroke: '#9ca3af', strokeDasharray: '2 2' }}
-              />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+              <YAxis tickFormatter={(value) => `Rs ${value.toLocaleString()}`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none', borderRadius: 8, color: '#fff' }} formatter={(value) => [`Rs ${value.toLocaleString()}`, 'Revenue']} labelStyle={{ fontWeight: 'bold', color: '#D1D5DB' }} cursor={{ stroke: '#9CA3AF', strokeDasharray: '2 2' }} />
               <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="revenue" 
-                fill="url(#colorGradientPurple)" 
-                stroke="#8b5cf6" 
-                strokeWidth={2} 
-                name="Revenue" 
-                dot={{ stroke: '#8b5cf6', strokeWidth: 2, r: 3, fill: '#fff' }}
-                animationBegin={400}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#7c3aed" 
-                strokeWidth={2} 
-                dot={{ r: 4, stroke: '#7c3aed', strokeWidth: 2, fill: '#fff' }} 
-                activeDot={{ r: 6, stroke: '#6d28d9', strokeWidth: 2, fill: '#fff' }} 
-                name="Revenue" 
-                animationBegin={400}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
+              <Area type="monotone" dataKey="revenue" fill="url(#colorGradientPurple)" stroke="#8B5CF6" strokeWidth={2} name="Revenue" dot={{ stroke: '#8B5CF6', strokeWidth: 2, r: 3, fill: '#fff' }} animationBegin={400} animationDuration={800} animationEasing="ease-out" />
+              <Line type="monotone" dataKey="revenue" stroke="#7C3AED" strokeWidth={2} dot={{ r: 4, stroke: '#7C3AED', strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, stroke: '#6D28D9', strokeWidth: 2, fill: '#fff' }} name="Revenue" animationBegin={400} animationDuration={800} animationEasing="ease-out" />
               <defs>
                 <linearGradient id="colorGradientPurple" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.05}/>
+                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
             </AreaChart>
@@ -801,39 +662,37 @@ const Financials = () => {
       </div>
 
       {/* Parts Cost Analysis */}
-      <div className="bg-white rounded-lg shadow p-3 md:p-6">
-        <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">Parts Cost Analysis</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      <div style={S.card()}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #E5E7EB' }}>
+          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#111827' }}>Parts Cost Analysis</h2>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
               <tr>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider md:px-6 md:py-3">Part Name</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider md:px-6 md:py-3">Category</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider md:px-6 md:py-3">Stock</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider md:px-6 md:py-3">Cost Price</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider md:px-6 md:py-3">Selling Price</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider md:px-6 md:py-3">Profit Margin</th>
+                <th style={S.th}>Part Name</th>
+                <th style={S.th}>Category</th>
+                <th style={S.th}>Stock</th>
+                <th style={S.th}>Cost Price</th>
+                <th style={S.th}>Selling Price</th>
+                <th style={S.th}>Profit Margin</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {(financialData.parts_cost_analysis || []).length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-3 py-2 text-center text-gray-500 md:px-6 md:py-4">
-                    No parts data available
-                  </td>
+                  <td colSpan="6" style={{ ...S.td, textAlign: 'center', color: '#6B7280', padding: 24 }}>No parts data available</td>
                 </tr>
               ) : (
                 (financialData.parts_cost_analysis || []).map((part) => (
-                  <tr key={part._id}>
-                    <td className="px-3 py-2 text-sm font-medium text-gray-900 md:px-6 md:py-4 whitespace-normal break-words">{part.name}</td>
-                    <td className="px-3 py-2 text-sm text-gray-500 md:px-6 md:py-4 whitespace-normal break-words">{part.category}</td>
-                    <td className="px-3 py-2 text-sm text-gray-500 md:px-6 md:py-4 whitespace-nowrap">{part.stock}</td>
-                    <td className="px-3 py-2 text-sm text-gray-500 md:px-6 md:py-4 whitespace-nowrap">{formatCurrency(part.cost_price)}</td>
-                    <td className="px-3 py-2 text-sm text-gray-500 md:px-6 md:py-4 whitespace-nowrap">{formatCurrency(part.selling_price)}</td>
-                    <td className="px-3 py-2 text-sm text-gray-500 md:px-6 md:py-4 whitespace-nowrap">
-                      <span className={part.profit_margin >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        {part.profit_margin >= 0 ? '+' : ''}{part.profit_margin}%
-                      </span>
+                  <tr key={part._id} style={{ transition: 'background-color 0.15s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F9FAFB'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                    <td style={{ ...S.td, fontWeight: 600, color: '#111827' }}>{part.name}</td>
+                    <td style={S.td}>{part.category}</td>
+                    <td style={S.td}>{part.stock}</td>
+                    <td style={S.td}>{formatCurrency(part.cost_price)}</td>
+                    <td style={S.td}>{formatCurrency(part.selling_price)}</td>
+                    <td style={{ ...S.td, color: part.profit_margin >= 0 ? '#10B981' : '#EF4444', fontWeight: 500 }}>
+                      {part.profit_margin >= 0 ? '+' : ''}{part.profit_margin}%
                     </td>
                   </tr>
                 ))
@@ -845,85 +704,50 @@ const Financials = () => {
       
       {/* Service Charge Details Modal */}
       {showServiceChargeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-800">Service Charge Details</h2>
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={downloadServiceChargesPDF}
-                  className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 inline-flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={downloadServiceChargesExcel}
-                  className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 inline-flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Excel
-                </button>
-                <button 
-                  onClick={() => setShowServiceChargeModal(false)}
-                  className="text-gray-500 hover:text-gray-700 ml-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 800, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: '#111827' }}>Service Charge Details</h2>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <button onClick={downloadServiceChargesPDF} style={S.btnDanger}>PDF</button>
+                <button onClick={downloadServiceChargesExcel} style={S.btnSuccess}>Excel</button>
+                <button onClick={() => setShowServiceChargeModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: '#6B7280', padding: '0 8px' }}>×</button>
               </div>
             </div>
             
-            <div className="overflow-y-auto flex-grow">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Job ID</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Customer Name</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Date</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Service Charge</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {serviceChargeDetails.details && serviceChargeDetails.details.length > 0 ? (
-                      serviceChargeDetails.details.map((detail, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-3 py-2 text-sm font-medium text-gray-900 sm:px-6 sm:py-4 whitespace-normal break-words">{detail.jobId}</td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">{detail.customerName}</td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">
-                            {new Date(detail.date).toLocaleDateString()}
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">{formatCurrency(detail.serviceChargeAmount)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
-                          No service charge details found
-                        </td>
+            <div style={{ overflowY: 'auto', flex: 1 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                  <tr>
+                    <th style={S.th}>Job ID</th>
+                    <th style={S.th}>Customer Name</th>
+                    <th style={S.th}>Date</th>
+                    <th style={S.th}>Service Charge</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serviceChargeDetails.details && serviceChargeDetails.details.length > 0 ? (
+                    serviceChargeDetails.details.map((detail, index) => (
+                      <tr key={index}>
+                        <td style={{ ...S.td, fontWeight: 500, color: '#111827' }}>{detail.jobId}</td>
+                        <td style={S.td}>{detail.customerName}</td>
+                        <td style={S.td}>{new Date(detail.date).toLocaleDateString()}</td>
+                        <td style={{ ...S.td, color: '#2563EB', fontWeight: 500 }}>{formatCurrency(detail.serviceChargeAmount)}</td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" style={{ ...S.td, textAlign: 'center', padding: 24 }}>No service charge details found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
             
             {serviceChargeDetails.totalServiceCharge !== undefined && (
-              <div className="p-6 border-t bg-gray-50">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-700">Total Service Charges:</span>
-                  <span className="text-xl font-bold text-blue-600">
-                    {formatCurrency(serviceChargeDetails.totalServiceCharge)}
-                  </span>
-                </div>
+              <div style={{ padding: '20px 24px', borderTop: '1px solid #E5E7EB', backgroundColor: '#F9FAFB', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+                <span style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Total Service Charges:</span>
+                <span style={{ fontSize: 20, fontWeight: 800, color: '#2563EB' }}>{formatCurrency(serviceChargeDetails.totalServiceCharge)}</span>
               </div>
             )}
           </div>
@@ -932,89 +756,54 @@ const Financials = () => {
       
       {/* Parts Revenue Details Modal */}
       {showPartsRevenueModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-800">Parts Revenue Details</h2>
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={downloadPartsRevenuePDF}
-                  className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 inline-flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={downloadPartsRevenueExcel}
-                  className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 inline-flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Excel
-                </button>
-                <button 
-                  onClick={() => setShowPartsRevenueModal(false)}
-                  className="text-gray-500 hover:text-gray-700 ml-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
+          <div style={{ ...S.card({ width: '100%', maxWidth: 900, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }) }}>
+            <div style={{ borderBottom: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: '#111827' }}>Parts Revenue Details</h2>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <button onClick={downloadPartsRevenuePDF} style={S.btnDanger}>PDF</button>
+                <button onClick={downloadPartsRevenueExcel} style={S.btnSuccess}>Excel</button>
+                <button onClick={() => setShowPartsRevenueModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: '#6B7280', padding: '0 8px' }}>×</button>
               </div>
             </div>
             
-            <div className="overflow-y-auto flex-grow">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Job ID</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Customer Name</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Date</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Part Name</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Quantity</th>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6 sm:py-3">Revenue</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {partsRevenueDetails.details && partsRevenueDetails.details.length > 0 ? (
-                      partsRevenueDetails.details.map((detail, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-3 py-2 text-sm font-medium text-gray-900 sm:px-6 sm:py-4 whitespace-normal break-words">{detail.jobId}</td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">{detail.customerName}</td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">
-                            {new Date(detail.date).toLocaleDateString()}
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">{detail.partName}</td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">{detail.quantity}</td>
-                          <td className="px-3 py-2 text-sm text-gray-500 sm:px-6 sm:py-4 whitespace-normal break-words">{formatCurrency(detail.totalRevenue)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                          No parts revenue details found
-                        </td>
+            <div style={{ overflowY: 'auto', flex: 1 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                  <tr>
+                    <th style={S.th}>Job ID</th>
+                    <th style={S.th}>Customer Name</th>
+                    <th style={S.th}>Date</th>
+                    <th style={S.th}>Part Name</th>
+                    <th style={S.th}>Quantity</th>
+                    <th style={S.th}>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {partsRevenueDetails.details && partsRevenueDetails.details.length > 0 ? (
+                    partsRevenueDetails.details.map((detail, index) => (
+                      <tr key={index}>
+                        <td style={{ ...S.td, fontWeight: 500, color: '#111827' }}>{detail.jobId}</td>
+                        <td style={S.td}>{detail.customerName}</td>
+                        <td style={S.td}>{new Date(detail.date).toLocaleDateString()}</td>
+                        <td style={S.td}>{detail.partName}</td>
+                        <td style={S.td}>{detail.quantity}</td>
+                        <td style={{ ...S.td, color: '#7C3AED', fontWeight: 500 }}>{formatCurrency(detail.totalRevenue)}</td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" style={{ ...S.td, textAlign: 'center', padding: 24 }}>No parts revenue details found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
             
             {partsRevenueDetails.totalPartsRevenue !== undefined && (
-              <div className="p-6 border-t bg-gray-50">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-700">Total Parts Revenue:</span>
-                  <span className="text-xl font-bold text-purple-600">
-                    {formatCurrency(partsRevenueDetails.totalPartsRevenue)}
-                  </span>
-                </div>
+              <div style={{ padding: '20px 24px', borderTop: '1px solid #E5E7EB', backgroundColor: '#F9FAFB', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+                <span style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Total Parts Revenue:</span>
+                <span style={{ fontSize: 20, fontWeight: 800, color: '#7C3AED' }}>{formatCurrency(partsRevenueDetails.totalPartsRevenue)}</span>
               </div>
             )}
           </div>
@@ -1022,6 +811,7 @@ const Financials = () => {
       )}
     </div>
   );
+
 };
 
 export default Financials;
